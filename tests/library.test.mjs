@@ -32,11 +32,14 @@ test("template lookup and facets work", () => {
 
 test("catalog ids are unique and starter files exist", () => {
   const templates = listTemplates();
+  const catalog = readFileSync("templates/catalog.json", "utf8").split("\n");
   const ids = templates.map((template) => template.id);
 
   assert.equal(new Set(ids).size, ids.length);
 
   for (const template of templates) {
+    assert.equal(catalog[template.github.catalogLine - 1].trim(), `"id": "${template.id}",`);
+
     for (const starter of template.starterFiles) {
       assert.ok(existsSync(starter.source), `${template.id} references missing starter: ${starter.source}`);
     }

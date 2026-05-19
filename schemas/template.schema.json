@@ -91,6 +91,16 @@
           }
         }
       }
+    },
+    "github": {
+      "type": "object",
+      "required": ["catalogLine"],
+      "properties": {
+        "catalogLine": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
     }
   },
   "$defs": {

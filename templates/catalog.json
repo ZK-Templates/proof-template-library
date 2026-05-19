@@ -6,6 +6,9 @@
     "category": "identity",
     "maturity": "starter",
     "systems": ["noir"],
+    "github": {
+      "catalogLine": 3
+    },
     "tags": ["identity", "selective-disclosure", "compliance", "mobile-friendly"],
     "statement": "I know a birth date committed by an issuer, and it proves I am at least the required age at the reference time.",
     "publicInputs": [
@@ -62,6 +65,9 @@
     "category": "identity",
     "maturity": "starter",
     "systems": ["noir"],
+    "github": {
+      "catalogLine": 62
+    },
     "tags": ["identity", "merkle", "anonymous-auth", "dao"],
     "statement": "I know a leaf and Merkle path that resolve to the public group root.",
     "publicInputs": [
@@ -118,6 +124,9 @@
     "category": "governance",
     "maturity": "starter",
     "systems": ["noir"],
+    "github": {
+      "catalogLine": 121
+    },
     "tags": ["governance", "nullifier", "merkle", "anti-sybil"],
     "statement": "I am in the eligible voter set, my vote is valid, and my nullifier prevents duplicate voting without revealing my identity.",
     "publicInputs": [
@@ -185,6 +194,9 @@
     "category": "access",
     "maturity": "starter",
     "systems": ["circom"],
+    "github": {
+      "catalogLine": 191
+    },
     "tags": ["allowlist", "access-control", "merkle", "mint"],
     "statement": "I know an account secret whose leaf is included in the public allowlist root.",
     "publicInputs": [
@@ -241,6 +253,9 @@
     "category": "finance",
     "maturity": "starter",
     "systems": ["noir"],
+    "github": {
+      "catalogLine": 250
+    },
     "tags": ["finance", "reserves", "audit", "solvency"],
     "statement": "I know committed liabilities and asset balances such that assets are greater than or equal to liabilities.",
     "publicInputs": [

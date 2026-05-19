@@ -229,6 +229,31 @@ ul {
   margin-top: auto;
 }
 
+.source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.source-links a {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.source-links a:focus-visible,
+.source-links a:hover {
+  background: #e8f3f0;
+}
+
 .tags span {
   border: 1px solid var(--line);
   border-radius: 999px;

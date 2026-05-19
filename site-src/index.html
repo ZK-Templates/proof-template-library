@@ -59,6 +59,7 @@
     </main>
 
     <script type="module">
+      const repoBaseUrl = "https://github.com/ZK-Templates/proof-template-library/blob/main";
       const catalog = await fetch("./catalog.json").then((response) => response.json());
       const templatesElement = document.querySelector("#templates");
       const countElement = document.querySelector("#count");
@@ -113,6 +114,20 @@
         const tags = template.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
         const constraints = template.constraints.map((constraint) => `<li>${escapeHtml(constraint)}</li>`).join("");
         const systems = template.systems.map((system) => `<strong>${escapeHtml(system)}</strong>`).join("");
+        const sourceLinks = [
+          {
+            label: "Template spec",
+            href: `${repoBaseUrl}/templates/catalog.json#L${template.github.catalogLine}`
+          },
+          ...template.starterFiles.map((file) => ({
+            label: `${file.system} starter`,
+            href: `${repoBaseUrl}/${file.source}`
+          }))
+        ].map((link) => `
+          <a href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer">
+            ${escapeHtml(link.label)}
+          </a>
+        `).join("");
 
         article.innerHTML = `
           <div class="card-heading">
@@ -126,6 +141,9 @@
           <div class="statement">${escapeHtml(template.statement)}</div>
           <h4>Core constraints</h4>
           <ul>${constraints}</ul>
+          <div class="source-links" aria-label="${escapeHtml(template.title)} source links">
+            ${sourceLinks}
+          </div>
           <div class="tags">${tags}</div>
         `;
 
