@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/proof-template.schema.json",
+  "title": "Proof Template",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "category",
+    "maturity",
+    "systems",
+    "tags",
+    "statement",
+    "publicInputs",
+    "privateInputs",
+    "constraints",
+    "securityNotes",
+    "starterFiles"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "maturity": {
+      "enum": ["starter", "reviewed", "audited"]
+    },
+    "systems": {
+      "type": "array",
+      "items": {
+        "enum": ["noir", "circom", "gnark", "sp1"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "statement": {
+      "type": "string"
+    },
+    "publicInputs": {
+      "$ref": "#/$defs/inputList"
+    },
+    "privateInputs": {
+      "$ref": "#/$defs/inputList"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "securityNotes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "starterFiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["system", "source", "output"],
+        "properties": {
+          "system": {
+            "enum": ["noir", "circom", "gnark", "sp1"]
+          },
+          "source": {
+            "type": "string"
+          },
+          "output": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "inputList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "description"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

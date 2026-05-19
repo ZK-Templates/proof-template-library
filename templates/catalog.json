@@ -1,0 +1,298 @@
+[
+  {
+    "id": "age-gate",
+    "title": "Age Gate",
+    "summary": "Prove that a private birth year or birth timestamp satisfies a minimum age threshold.",
+    "category": "identity",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["identity", "selective-disclosure", "compliance", "mobile-friendly"],
+    "statement": "I know a birth date committed by an issuer, and it proves I am at least the required age at the reference time.",
+    "publicInputs": [
+      {
+        "name": "current_year",
+        "type": "u32",
+        "description": "Reference year used by the verifier."
+      },
+      {
+        "name": "minimum_age",
+        "type": "u32",
+        "description": "Age threshold the user must satisfy."
+      },
+      {
+        "name": "identity_commitment",
+        "type": "Field",
+        "description": "Public commitment binding this claim to a credential or account."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "birth_year",
+        "type": "u32",
+        "description": "User birth year from the private credential."
+      },
+      {
+        "name": "credential_secret",
+        "type": "Field",
+        "description": "Secret used to bind the proof to the committed credential."
+      }
+    ],
+    "constraints": [
+      "current_year - birth_year >= minimum_age",
+      "identity_commitment is derived from the private credential material",
+      "birth_year is range-constrained to a realistic interval"
+    ],
+    "securityNotes": [
+      "Use a full birth date if the relying party requires exact age at a specific day.",
+      "Bind proofs to a domain or verifier challenge to prevent replay.",
+      "Do not expose raw credential identifiers as public inputs."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/age-gate.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "group-membership",
+    "title": "Group Membership",
+    "summary": "Prove that a private identity leaf belongs to a public Merkle root without revealing which member you are.",
+    "category": "identity",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["identity", "merkle", "anonymous-auth", "dao"],
+    "statement": "I know a leaf and Merkle path that resolve to the public group root.",
+    "publicInputs": [
+      {
+        "name": "group_root",
+        "type": "Field",
+        "description": "Merkle root representing the current group."
+      },
+      {
+        "name": "scope",
+        "type": "Field",
+        "description": "Application or verifier scope for replay separation."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "identity_secret",
+        "type": "Field",
+        "description": "Private identity secret used to derive the member leaf."
+      },
+      {
+        "name": "path",
+        "type": "[Field; DEPTH]",
+        "description": "Merkle sibling path."
+      },
+      {
+        "name": "indices",
+        "type": "[Field; DEPTH]",
+        "description": "Path direction bits."
+      }
+    ],
+    "constraints": [
+      "leaf = hash(identity_secret, scope)",
+      "Merkle path recomputes group_root",
+      "indices are constrained to binary values"
+    ],
+    "securityNotes": [
+      "Version your group roots and publish update cadence.",
+      "Avoid small anonymity sets; membership proofs are only as private as the group size.",
+      "Use circuit-friendly hash functions consistently across tree construction and circuit verification."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/group-membership.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "anonymous-vote",
+    "title": "Anonymous Vote",
+    "summary": "Prove vote eligibility and emit a nullifier so each eligible member can vote once.",
+    "category": "governance",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["governance", "nullifier", "merkle", "anti-sybil"],
+    "statement": "I am in the eligible voter set, my vote is valid, and my nullifier prevents duplicate voting without revealing my identity.",
+    "publicInputs": [
+      {
+        "name": "election_id",
+        "type": "Field",
+        "description": "Unique election or proposal identifier."
+      },
+      {
+        "name": "voter_root",
+        "type": "Field",
+        "description": "Merkle root for eligible voters."
+      },
+      {
+        "name": "nullifier",
+        "type": "Field",
+        "description": "One-time public nullifier for this election."
+      },
+      {
+        "name": "vote_commitment",
+        "type": "Field",
+        "description": "Commitment to the private vote value."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "identity_secret",
+        "type": "Field",
+        "description": "Private voter secret."
+      },
+      {
+        "name": "vote",
+        "type": "u32",
+        "description": "Private vote choice."
+      },
+      {
+        "name": "path",
+        "type": "[Field; DEPTH]",
+        "description": "Eligibility Merkle sibling path."
+      }
+    ],
+    "constraints": [
+      "Voter leaf is included in voter_root",
+      "nullifier = hash(identity_secret, election_id)",
+      "vote is constrained to allowed options",
+      "vote_commitment binds vote and election_id"
+    ],
+    "securityNotes": [
+      "Publish and freeze eligible roots before voting starts.",
+      "Track nullifiers outside the circuit to reject duplicates.",
+      "Consider coercion resistance separately; basic anonymous voting does not solve it."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/anonymous-vote.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "private-allowlist",
+    "title": "Private Allowlist Claim",
+    "summary": "Prove that a private address or account is allowlisted without revealing the address itself.",
+    "category": "access",
+    "maturity": "starter",
+    "systems": ["circom"],
+    "tags": ["allowlist", "access-control", "merkle", "mint"],
+    "statement": "I know an account secret whose leaf is included in the public allowlist root.",
+    "publicInputs": [
+      {
+        "name": "allowlistRoot",
+        "type": "Field",
+        "description": "Merkle root of the allowlist."
+      },
+      {
+        "name": "claimNullifier",
+        "type": "Field",
+        "description": "Public nullifier for one claim per account."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "accountSecret",
+        "type": "Field",
+        "description": "Private account or credential secret."
+      },
+      {
+        "name": "siblings",
+        "type": "Field[DEPTH]",
+        "description": "Merkle sibling path."
+      },
+      {
+        "name": "pathIndices",
+        "type": "Field[DEPTH]",
+        "description": "Merkle path direction bits."
+      }
+    ],
+    "constraints": [
+      "Leaf is derived from accountSecret",
+      "Merkle path recomputes allowlistRoot",
+      "claimNullifier is derived from accountSecret and claim scope"
+    ],
+    "securityNotes": [
+      "Do not use raw wallet addresses as private leaves without salting or committing.",
+      "Keep the off-chain allowlist builder deterministic and audited.",
+      "Reject reused nullifiers in the application contract or service."
+    ],
+    "starterFiles": [
+      {
+        "system": "circom",
+        "source": "templates/scaffolds/private-allowlist.circom",
+        "output": "circuits/private_allowlist.circom"
+      }
+    ]
+  },
+  {
+    "id": "proof-of-reserves",
+    "title": "Proof of Reserves",
+    "summary": "Prove assets cover liabilities without exposing every customer balance.",
+    "category": "finance",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["finance", "reserves", "audit", "solvency"],
+    "statement": "I know committed liabilities and asset balances such that assets are greater than or equal to liabilities.",
+    "publicInputs": [
+      {
+        "name": "liabilities_root",
+        "type": "Field",
+        "description": "Commitment root for user liabilities."
+      },
+      {
+        "name": "assets_commitment",
+        "type": "Field",
+        "description": "Commitment to asset balances or attestations."
+      },
+      {
+        "name": "solvency_epoch",
+        "type": "Field",
+        "description": "Reporting period identifier."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "total_assets",
+        "type": "u128",
+        "description": "Private summed assets."
+      },
+      {
+        "name": "total_liabilities",
+        "type": "u128",
+        "description": "Private summed liabilities."
+      },
+      {
+        "name": "opening_secret",
+        "type": "Field",
+        "description": "Commitment opening secret."
+      }
+    ],
+    "constraints": [
+      "total_assets >= total_liabilities",
+      "assets_commitment binds total_assets and solvency_epoch",
+      "liabilities_root is referenced by epoch and published outside the circuit"
+    ],
+    "securityNotes": [
+      "ZK solvency is not a substitute for asset custody attestations.",
+      "Require non-negative user balances and inclusion proofs for customer self-checks.",
+      "Define treatment of off-chain, encumbered, or borrowed assets explicitly."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/proof-of-reserves.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  }
+]

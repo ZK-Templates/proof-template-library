@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Proof Template Library</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Zero-knowledge starter kit</p>
+        <h1>Proof Template Library</h1>
+      </div>
+      <a class="github-link" href="https://github.com/ZK-Templates/proof-template-library">GitHub</a>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div>
+          <h2>Reusable proof patterns for ZK apps</h2>
+          <p>
+            Browse starter proof templates with public inputs, private witnesses,
+            implementation constraints, and security review notes.
+          </p>
+        </div>
+        <div class="commands" aria-label="CLI commands">
+          <code>node src/cli.js list</code>
+          <code>node src/cli.js scaffold age-gate --system noir</code>
+        </div>
+      </section>
+
+      <section class="filters" aria-label="Template filters">
+        <label>
+          Search
+          <input id="search" type="search" placeholder="age, vote, merkle, reserves">
+        </label>
+        <label>
+          Category
+          <select id="category">
+            <option value="">All categories</option>
+          </select>
+        </label>
+        <label>
+          System
+          <select id="system">
+            <option value="">All systems</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Templates</h2>
+          <span id="count"></span>
+        </div>
+        <div id="templates" class="template-grid"></div>
+      </section>
+    </main>
+
+    <script type="module">
+      const catalog = await fetch("./catalog.json").then((response) => response.json());
+      const templatesElement = document.querySelector("#templates");
+      const countElement = document.querySelector("#count");
+      const searchElement = document.querySelector("#search");
+      const categoryElement = document.querySelector("#category");
+      const systemElement = document.querySelector("#system");
+
+      const categories = [...new Set(catalog.map((template) => template.category))].sort();
+      const systems = [...new Set(catalog.flatMap((template) => template.systems))].sort();
+
+      for (const category of categories) {
+        categoryElement.append(new Option(category, category));
+      }
+
+      for (const system of systems) {
+        systemElement.append(new Option(system, system));
+      }
+
+      for (const element of [searchElement, categoryElement, systemElement]) {
+        element.addEventListener("input", render);
+      }
+
+      render();
+
+      function render() {
+        const query = searchElement.value.trim().toLowerCase();
+        const category = categoryElement.value;
+        const system = systemElement.value;
+
+        const filtered = catalog.filter((template) => {
+          const searchable = [
+            template.title,
+            template.summary,
+            template.statement,
+            template.category,
+            ...template.tags
+          ].join(" ").toLowerCase();
+
+          return (!query || searchable.includes(query))
+            && (!category || template.category === category)
+            && (!system || template.systems.includes(system));
+        });
+
+        countElement.textContent = `${filtered.length} shown`;
+        templatesElement.replaceChildren(...filtered.map(renderCard));
+      }
+
+      function renderCard(template) {
+        const article = document.createElement("article");
+        article.className = "template-card";
+
+        const tags = template.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
+        const constraints = template.constraints.map((constraint) => `<li>${escapeHtml(constraint)}</li>`).join("");
+        const systems = template.systems.map((system) => `<strong>${escapeHtml(system)}</strong>`).join("");
+
+        article.innerHTML = `
+          <div class="card-heading">
+            <div>
+              <p>${escapeHtml(template.category)}</p>
+              <h3>${escapeHtml(template.title)}</h3>
+            </div>
+            <div class="systems">${systems}</div>
+          </div>
+          <p class="summary">${escapeHtml(template.summary)}</p>
+          <div class="statement">${escapeHtml(template.statement)}</div>
+          <h4>Core constraints</h4>
+          <ul>${constraints}</ul>
+          <div class="tags">${tags}</div>
+        `;
+
+        return article;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    </script>
+  </body>
+</html>

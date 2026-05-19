@@ -1,0 +1,26 @@
+{
+  "name": "proof-template-library",
+  "version": "0.1.0",
+  "description": "A starter library of reusable zero-knowledge proof templates and scaffolds.",
+  "type": "module",
+  "bin": {
+    "proof-templates": "./src/cli.js"
+  },
+  "scripts": {
+    "build:site": "node scripts/build-site.js",
+    "test": "node --test tests/*.test.mjs",
+    "list": "node src/cli.js list"
+  },
+  "keywords": [
+    "zero-knowledge",
+    "zk",
+    "proofs",
+    "circuits",
+    "noir",
+    "circom"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
