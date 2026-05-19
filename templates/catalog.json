@@ -6,9 +6,6 @@
     "category": "identity",
     "maturity": "starter",
     "systems": ["noir"],
-    "github": {
-      "catalogLine": 3
-    },
     "tags": ["identity", "selective-disclosure", "compliance", "mobile-friendly"],
     "statement": "I know a birth date committed by an issuer, and it proves I am at least the required age at the reference time.",
     "publicInputs": [
@@ -65,9 +62,6 @@
     "category": "identity",
     "maturity": "starter",
     "systems": ["noir"],
-    "github": {
-      "catalogLine": 62
-    },
     "tags": ["identity", "merkle", "anonymous-auth", "dao"],
     "statement": "I know a leaf and Merkle path that resolve to the public group root.",
     "publicInputs": [
@@ -124,9 +118,6 @@
     "category": "governance",
     "maturity": "starter",
     "systems": ["noir"],
-    "github": {
-      "catalogLine": 121
-    },
     "tags": ["governance", "nullifier", "merkle", "anti-sybil"],
     "statement": "I am in the eligible voter set, my vote is valid, and my nullifier prevents duplicate voting without revealing my identity.",
     "publicInputs": [
@@ -194,9 +185,6 @@
     "category": "access",
     "maturity": "starter",
     "systems": ["circom"],
-    "github": {
-      "catalogLine": 191
-    },
     "tags": ["allowlist", "access-control", "merkle", "mint"],
     "statement": "I know an account secret whose leaf is included in the public allowlist root.",
     "publicInputs": [
@@ -253,9 +241,6 @@
     "category": "finance",
     "maturity": "starter",
     "systems": ["noir"],
-    "github": {
-      "catalogLine": 250
-    },
     "tags": ["finance", "reserves", "audit", "solvency"],
     "statement": "I know committed liabilities and asset balances such that assets are greater than or equal to liabilities.",
     "publicInputs": [
@@ -306,6 +291,423 @@
       {
         "system": "noir",
         "source": "templates/scaffolds/proof-of-reserves.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "token-ownership",
+    "title": "Private Token Ownership",
+    "summary": "Prove ownership of at least one token from a collection without revealing the wallet or token ID.",
+    "category": "assets",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["assets", "nft", "access-control", "membership"],
+    "statement": "I know a wallet secret and token leaf included in a public ownership root for the required collection.",
+    "publicInputs": [
+      {
+        "name": "collection_id",
+        "type": "Field",
+        "description": "Collection, contract, or asset namespace being checked."
+      },
+      {
+        "name": "ownership_root",
+        "type": "Field",
+        "description": "Merkle root of eligible token ownership commitments."
+      },
+      {
+        "name": "access_nullifier",
+        "type": "Field",
+        "description": "Optional nullifier for one access claim per scope."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "wallet_secret",
+        "type": "Field",
+        "description": "Secret binding the proof to the private wallet or credential."
+      },
+      {
+        "name": "token_id",
+        "type": "Field",
+        "description": "Private token identifier."
+      },
+      {
+        "name": "path",
+        "type": "[Field; DEPTH]",
+        "description": "Merkle sibling path for the ownership commitment."
+      }
+    ],
+    "constraints": [
+      "Ownership leaf is derived from collection_id, token_id, and wallet_secret",
+      "Merkle path recomputes ownership_root",
+      "access_nullifier is bound to wallet_secret and collection_id"
+    ],
+    "securityNotes": [
+      "Define ownership snapshot timing to avoid stale or transferred token claims.",
+      "Avoid small collections if holder privacy matters.",
+      "Use a deterministic off-chain indexer and publish its snapshot hash."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/token-ownership.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "range-proof",
+    "title": "Private Range Proof",
+    "summary": "Prove a private value falls within a public min/max range without revealing the value.",
+    "category": "data",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["range", "selective-disclosure", "finance", "compliance"],
+    "statement": "I know a committed value that is greater than or equal to the lower bound and less than or equal to the upper bound.",
+    "publicInputs": [
+      {
+        "name": "min_value",
+        "type": "u128",
+        "description": "Inclusive lower bound."
+      },
+      {
+        "name": "max_value",
+        "type": "u128",
+        "description": "Inclusive upper bound."
+      },
+      {
+        "name": "value_commitment",
+        "type": "Field",
+        "description": "Public commitment to the private value."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "value",
+        "type": "u128",
+        "description": "Private value being checked."
+      },
+      {
+        "name": "opening_secret",
+        "type": "Field",
+        "description": "Commitment opening secret."
+      }
+    ],
+    "constraints": [
+      "value >= min_value",
+      "value <= max_value",
+      "value_commitment binds value and opening_secret"
+    ],
+    "securityNotes": [
+      "Use typed integer values for comparisons rather than field-only arithmetic.",
+      "Be explicit about units, decimals, and rounding.",
+      "Avoid revealing overly narrow bounds when they effectively disclose the value."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/range-proof.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "anonymous-rate-limit",
+    "title": "Anonymous Rate Limit",
+    "summary": "Let users perform one action per epoch without revealing which user acted.",
+    "category": "access",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["nullifier", "rate-limit", "anti-spam", "anonymous-auth"],
+    "statement": "I am an eligible member and emit an epoch-specific nullifier so only one action is accepted per epoch.",
+    "publicInputs": [
+      {
+        "name": "membership_root",
+        "type": "Field",
+        "description": "Merkle root of eligible users."
+      },
+      {
+        "name": "epoch",
+        "type": "Field",
+        "description": "Time window or rate-limit bucket."
+      },
+      {
+        "name": "rate_nullifier",
+        "type": "Field",
+        "description": "Public nullifier for this user and epoch."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "identity_secret",
+        "type": "Field",
+        "description": "Private user secret."
+      },
+      {
+        "name": "path",
+        "type": "[Field; DEPTH]",
+        "description": "Merkle sibling path."
+      },
+      {
+        "name": "indices",
+        "type": "[Field; DEPTH]",
+        "description": "Merkle path direction bits."
+      }
+    ],
+    "constraints": [
+      "Identity leaf is included in membership_root",
+      "rate_nullifier = hash(identity_secret, epoch)",
+      "Path indices are constrained to binary values"
+    ],
+    "securityNotes": [
+      "Reject duplicate nullifiers in the app or contract.",
+      "Choose epochs carefully; short epochs can leak timing patterns.",
+      "Keep anonymity sets large enough for the rate-limited action."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/anonymous-rate-limit.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "private-reputation",
+    "title": "Private Reputation Threshold",
+    "summary": "Prove a private reputation score meets a public threshold without revealing the exact score.",
+    "category": "identity",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["reputation", "identity", "threshold", "anti-sybil"],
+    "statement": "I know an issued reputation score and credential secret proving my score is at or above the verifier's threshold.",
+    "publicInputs": [
+      {
+        "name": "minimum_score",
+        "type": "u32",
+        "description": "Required reputation threshold."
+      },
+      {
+        "name": "issuer_commitment",
+        "type": "Field",
+        "description": "Public commitment to the issuer or credential schema."
+      },
+      {
+        "name": "credential_commitment",
+        "type": "Field",
+        "description": "Commitment to the private score credential."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "score",
+        "type": "u32",
+        "description": "Private reputation score."
+      },
+      {
+        "name": "credential_secret",
+        "type": "Field",
+        "description": "Secret opening the score credential."
+      }
+    ],
+    "constraints": [
+      "score >= minimum_score",
+      "credential_commitment binds score, issuer_commitment, and credential_secret",
+      "score is range-constrained to the credential schema"
+    ],
+    "securityNotes": [
+      "Score issuance and revocation are separate trust assumptions.",
+      "Use schema/version identifiers to avoid replaying old score formats.",
+      "Consider whether threshold choice leaks sensitive reputation bands."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/private-reputation.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "email-domain",
+    "title": "Email Domain Credential",
+    "summary": "Prove control of an email address from an allowed domain without revealing the full address.",
+    "category": "identity",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["email", "credential", "domain", "selective-disclosure"],
+    "statement": "I know an email credential whose domain hash matches an allowed public domain commitment.",
+    "publicInputs": [
+      {
+        "name": "allowed_domain_hash",
+        "type": "Field",
+        "description": "Hash or commitment for the accepted email domain."
+      },
+      {
+        "name": "credential_issuer",
+        "type": "Field",
+        "description": "Issuer identifier or schema commitment."
+      },
+      {
+        "name": "subject_nullifier",
+        "type": "Field",
+        "description": "Optional stable nullifier for one claim per email subject."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "domain_hash",
+        "type": "Field",
+        "description": "Private parsed email domain hash."
+      },
+      {
+        "name": "email_secret",
+        "type": "Field",
+        "description": "Secret tied to the email subject."
+      }
+    ],
+    "constraints": [
+      "domain_hash equals allowed_domain_hash",
+      "Credential is bound to credential_issuer",
+      "subject_nullifier is derived from email_secret and credential_issuer"
+    ],
+    "securityNotes": [
+      "Email parsing and canonicalization must happen before credential issuance.",
+      "Avoid proving raw domain strings directly inside the circuit unless needed.",
+      "Decide whether aliases and plus-addressing should collapse to the same subject."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/email-domain.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "geo-eligibility",
+    "title": "Private Location Eligibility",
+    "summary": "Prove a private location credential is inside an allowed region without revealing the precise location.",
+    "category": "compliance",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["location", "compliance", "credential", "range"],
+    "statement": "I know a location credential whose bounded coordinates fall inside the verifier's allowed region.",
+    "publicInputs": [
+      {
+        "name": "min_lat_offset",
+        "type": "u64",
+        "description": "Scaled minimum latitude bound after applying a positive coordinate offset."
+      },
+      {
+        "name": "max_lat_offset",
+        "type": "u64",
+        "description": "Scaled maximum latitude bound after applying a positive coordinate offset."
+      },
+      {
+        "name": "min_lon_offset",
+        "type": "u64",
+        "description": "Scaled minimum longitude bound after applying a positive coordinate offset."
+      },
+      {
+        "name": "max_lon_offset",
+        "type": "u64",
+        "description": "Scaled maximum longitude bound after applying a positive coordinate offset."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "lat_offset",
+        "type": "u64",
+        "description": "Private scaled latitude after applying a positive coordinate offset."
+      },
+      {
+        "name": "lon_offset",
+        "type": "u64",
+        "description": "Private scaled longitude after applying a positive coordinate offset."
+      },
+      {
+        "name": "credential_secret",
+        "type": "Field",
+        "description": "Secret tying the location to an issued credential."
+      }
+    ],
+    "constraints": [
+      "lat_offset is between min_lat_offset and max_lat_offset",
+      "lon_offset is between min_lon_offset and max_lon_offset",
+      "Credential secret binds the proof to an issuer outside the coordinate checks"
+    ],
+    "securityNotes": [
+      "Bounding boxes are approximate; use region membership sets for irregular boundaries.",
+      "Location credentials can be highly sensitive even when approximate.",
+      "Use short-lived credentials for live presence claims."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/geo-eligibility.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "web-data-attestation",
+    "title": "Private Web Data Attestation",
+    "summary": "Prove a signed or TLS-notarized web response contains a required committed value.",
+    "category": "data",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["attestation", "tls", "oracle", "web2"],
+    "statement": "I know a private web response and attestation opening that matches a public endpoint and committed field value.",
+    "publicInputs": [
+      {
+        "name": "endpoint_commitment",
+        "type": "Field",
+        "description": "Commitment to the expected domain, path, and method."
+      },
+      {
+        "name": "field_commitment",
+        "type": "Field",
+        "description": "Commitment to the field value being proven."
+      },
+      {
+        "name": "attestor_key",
+        "type": "Field",
+        "description": "Public attestor or notary key commitment."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "field_value",
+        "type": "Field",
+        "description": "Private parsed field value."
+      },
+      {
+        "name": "response_secret",
+        "type": "Field",
+        "description": "Secret opening for the response commitment."
+      },
+      {
+        "name": "attestation_secret",
+        "type": "Field",
+        "description": "Private witness material from the attestation protocol."
+      }
+    ],
+    "constraints": [
+      "field_commitment binds field_value and response_secret",
+      "endpoint_commitment is tied to the attested response",
+      "attestation_secret verifies against attestor_key"
+    ],
+    "securityNotes": [
+      "Most real TLS-notary systems require specialized verification gadgets.",
+      "Parsing must be deterministic and covered by tests.",
+      "Separate freshness, endpoint authenticity, and field extraction assumptions."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/web-data-attestation.noir.nr",
         "output": "src/main.nr"
       }
     ]

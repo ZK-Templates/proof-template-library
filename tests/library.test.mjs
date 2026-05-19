@@ -8,17 +8,32 @@ import { getCategories, getTags, getTemplate, listTemplates, scaffoldTemplate } 
 test("catalog exposes starter proof templates", () => {
   const templates = listTemplates();
 
-  assert.equal(templates.length, 5);
+  assert.equal(templates.length, 12);
   assert.deepEqual(
     templates.map((template) => template.id).sort(),
-    ["age-gate", "anonymous-vote", "group-membership", "private-allowlist", "proof-of-reserves"]
+    [
+      "age-gate",
+      "anonymous-rate-limit",
+      "anonymous-vote",
+      "email-domain",
+      "geo-eligibility",
+      "group-membership",
+      "private-allowlist",
+      "private-reputation",
+      "proof-of-reserves",
+      "range-proof",
+      "token-ownership",
+      "web-data-attestation"
+    ]
   );
 });
 
 test("templates can be filtered by system, category, and tag", () => {
   assert.equal(listTemplates({ system: "circom" }).length, 1);
-  assert.equal(listTemplates({ category: "identity" }).length, 2);
+  assert.equal(listTemplates({ category: "identity" }).length, 4);
+  assert.equal(listTemplates({ category: "data" }).length, 2);
   assert.ok(listTemplates({ tag: "merkle" }).some((template) => template.id === "group-membership"));
+  assert.ok(listTemplates({ tag: "attestation" }).some((template) => template.id === "web-data-attestation"));
 });
 
 test("template lookup and facets work", () => {
@@ -32,14 +47,11 @@ test("template lookup and facets work", () => {
 
 test("catalog ids are unique and starter files exist", () => {
   const templates = listTemplates();
-  const catalog = readFileSync("templates/catalog.json", "utf8").split("\n");
   const ids = templates.map((template) => template.id);
 
   assert.equal(new Set(ids).size, ids.length);
 
   for (const template of templates) {
-    assert.equal(catalog[template.github.catalogLine - 1].trim(), `"id": "${template.id}",`);
-
     for (const starter of template.starterFiles) {
       assert.ok(existsSync(starter.source), `${template.id} references missing starter: ${starter.source}`);
     }

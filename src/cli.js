@@ -12,9 +12,12 @@ try {
       category: options.category,
       system: options.system
     });
+    const idWidth = Math.max("template".length, ...templates.map((template) => template.id.length)) + 2;
+    const categoryWidth = Math.max("category".length, ...templates.map((template) => template.category.length)) + 2;
+    const systemsWidth = Math.max("systems".length, ...templates.map((template) => template.systems.join(",").length)) + 2;
 
     for (const template of templates) {
-      console.log(`${template.id.padEnd(18)} ${template.category.padEnd(12)} ${template.systems.join(",").padEnd(10)} ${template.summary}`);
+      console.log(`${template.id.padEnd(idWidth)}${template.category.padEnd(categoryWidth)}${template.systems.join(",").padEnd(systemsWidth)}${template.summary}`);
     }
     process.exit(0);
   }
