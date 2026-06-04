@@ -18,6 +18,7 @@
     <main>
       <section class="intro">
         <div>
+          <div class="release-pill">New: AI proof templates</div>
           <h2>Reusable proof patterns for ZK apps</h2>
           <p>
             Browse starter proof templates with public inputs, private witnesses,
@@ -47,6 +48,12 @@
             <option value="">All systems</option>
           </select>
         </label>
+        <label>
+          Maturity
+          <select id="maturity">
+            <option value="">All maturity levels</option>
+          </select>
+        </label>
       </section>
 
       <section>
@@ -66,9 +73,13 @@
       const searchElement = document.querySelector("#search");
       const categoryElement = document.querySelector("#category");
       const systemElement = document.querySelector("#system");
+      const maturityElement = document.querySelector("#maturity");
 
       const categories = [...new Set(catalog.map((template) => template.category))].sort();
       const systems = [...new Set(catalog.flatMap((template) => template.systems))].sort();
+      const maturityOrder = ["starter", "experimental", "reviewed", "production-pattern", "audited"];
+      const maturities = [...new Set(catalog.map((template) => template.maturity))]
+        .sort((a, b) => maturityOrder.indexOf(a) - maturityOrder.indexOf(b));
 
       for (const category of categories) {
         categoryElement.append(new Option(category, category));
@@ -78,7 +89,11 @@
         systemElement.append(new Option(system, system));
       }
 
-      for (const element of [searchElement, categoryElement, systemElement]) {
+      for (const maturity of maturities) {
+        maturityElement.append(new Option(formatMaturity(maturity), maturity));
+      }
+
+      for (const element of [searchElement, categoryElement, systemElement, maturityElement]) {
         element.addEventListener("input", render);
       }
 
@@ -88,6 +103,7 @@
         const query = searchElement.value.trim().toLowerCase();
         const category = categoryElement.value;
         const system = systemElement.value;
+        const maturity = maturityElement.value;
 
         const filtered = catalog.filter((template) => {
           const searchable = [
@@ -95,12 +111,14 @@
             template.summary,
             template.statement,
             template.category,
+            template.maturity,
             ...template.tags
           ].join(" ").toLowerCase();
 
           return (!query || searchable.includes(query))
             && (!category || template.category === category)
-            && (!system || template.systems.includes(system));
+            && (!system || template.systems.includes(system))
+            && (!maturity || template.maturity === maturity);
         });
 
         countElement.textContent = `${filtered.length} shown`;
@@ -114,6 +132,7 @@
         const tags = template.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
         const constraints = template.constraints.map((constraint) => `<li>${escapeHtml(constraint)}</li>`).join("");
         const systems = template.systems.map((system) => `<strong>${escapeHtml(system)}</strong>`).join("");
+        const maturity = `<span class="maturity maturity-${escapeHtml(template.maturity)}">${escapeHtml(formatMaturity(template.maturity))}</span>`;
         const sourceLinks = [
           {
             label: "Template spec",
@@ -135,7 +154,7 @@
               <p>${escapeHtml(template.category)}</p>
               <h3>${escapeHtml(template.title)}</h3>
             </div>
-            <div class="systems">${systems}</div>
+            <div class="systems">${systems}${maturity}</div>
           </div>
           <p class="summary">${escapeHtml(template.summary)}</p>
           <div class="statement">${escapeHtml(template.statement)}</div>
@@ -157,6 +176,10 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      function formatMaturity(value) {
+        return value.split("-").map((part) => part[0].toUpperCase() + part.slice(1)).join(" ");
       }
     </script>
   </body>

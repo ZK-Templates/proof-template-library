@@ -10,7 +10,8 @@ try {
     const templates = listTemplates({
       tag: options.tag,
       category: options.category,
-      system: options.system
+      system: options.system,
+      maturity: options.maturity
     });
     const idWidth = Math.max("template".length, ...templates.map((template) => template.id.length)) + 2;
     const categoryWidth = Math.max("category".length, ...templates.map((template) => template.category.length)) + 2;
@@ -126,7 +127,7 @@ function printHelp() {
   console.log(`Proof Template Library
 
 Usage:
-  proof-templates list [--tag tag] [--category category] [--system noir|circom]
+  proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern]
   proof-templates show <id> [--json]
   proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
   proof-templates tags

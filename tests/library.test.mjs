@@ -8,21 +8,27 @@ import { getCategories, getTags, getTemplate, listTemplates, scaffoldTemplate } 
 test("catalog exposes starter proof templates", () => {
   const templates = listTemplates();
 
-  assert.equal(templates.length, 12);
+  assert.equal(templates.length, 18);
   assert.deepEqual(
     templates.map((template) => template.id).sort(),
     [
       "age-gate",
+      "ai-agent-action-receipt",
       "anonymous-rate-limit",
       "anonymous-vote",
+      "confidential-dataset-eligibility",
       "email-domain",
       "geo-eligibility",
       "group-membership",
+      "model-version-proof",
       "private-allowlist",
+      "private-classification-threshold",
+      "private-prompt-evaluation",
       "private-reputation",
       "proof-of-reserves",
       "range-proof",
       "token-ownership",
+      "verifiable-ai-inference",
       "web-data-attestation"
     ]
   );
@@ -30,9 +36,12 @@ test("catalog exposes starter proof templates", () => {
 
 test("templates can be filtered by system, category, and tag", () => {
   assert.equal(listTemplates({ system: "circom" }).length, 1);
+  assert.equal(listTemplates({ category: "ai" }).length, 6);
   assert.equal(listTemplates({ category: "identity" }).length, 4);
   assert.equal(listTemplates({ category: "data" }).length, 2);
+  assert.equal(listTemplates({ maturity: "experimental" }).length, 4);
   assert.ok(listTemplates({ tag: "merkle" }).some((template) => template.id === "group-membership"));
+  assert.ok(listTemplates({ tag: "ai" }).some((template) => template.id === "verifiable-ai-inference"));
   assert.ok(listTemplates({ tag: "attestation" }).some((template) => template.id === "web-data-attestation"));
 });
 

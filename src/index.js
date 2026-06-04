@@ -14,6 +14,7 @@ export function listTemplates(filters = {}) {
   const tag = filters.tag?.toLowerCase();
   const category = filters.category?.toLowerCase();
   const system = filters.system?.toLowerCase();
+  const maturity = filters.maturity?.toLowerCase();
 
   return templates.filter((template) => {
     if (tag && !template.tags.some((candidate) => candidate.toLowerCase() === tag)) {
@@ -23,6 +24,9 @@ export function listTemplates(filters = {}) {
       return false;
     }
     if (system && !template.systems.some((candidate) => candidate.toLowerCase() === system)) {
+      return false;
+    }
+    if (maturity && template.maturity.toLowerCase() !== maturity) {
       return false;
     }
     return true;
@@ -115,6 +119,10 @@ ${template.statement}
 
 Starter target: ${system}
 
+## Maturity
+
+${formatMaturity(template.maturity)}
+
 ## Public inputs
 
 ${publicInputs}
@@ -135,4 +143,8 @@ ${notes}
 
 This is a starter template, not an audited production circuit. Treat it as a specification and scaffold for implementation, tests, and review.
 `;
+}
+
+function formatMaturity(value) {
+  return value.split("-").map((part) => part[0].toUpperCase() + part.slice(1)).join(" ");
 }

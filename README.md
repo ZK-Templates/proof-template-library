@@ -2,15 +2,28 @@
 
 A starter library of reusable zero-knowledge proof templates. It gives a project team a shared catalog of proof patterns, their public/private inputs, security notes, and starter circuit files.
 
-This first version focuses on templates that show up often in privacy-preserving apps:
+The catalog focuses on templates that show up often in privacy-preserving apps, including a new AI pack for verifiable agents and private AI workflows:
 
 - Age Gate
 - Group Membership
 - Anonymous Vote
 - Private Allowlist Claim
 - Proof of Reserves
+- Private Token Ownership
+- Private Range Proof
+- Anonymous Rate Limit
+- Private Reputation Threshold
+- Email Domain Credential
+- Private Location Eligibility
+- Private Web Data Attestation
+- Verifiable AI Inference
+- Private Prompt Evaluation
+- AI Agent Action Receipt
+- Model Version Proof
+- Private Classification Threshold
+- Confidential Dataset Eligibility
 
-The templates are intentionally marked `starter`. They are not audited production circuits. Treat them as implementation scaffolds and review checklists.
+Templates include maturity labels such as `starter` and `experimental`. They are not audited production circuits. Treat them as implementation scaffolds and review checklists.
 
 ## Quick Start
 
@@ -47,7 +60,7 @@ npm run build:site
 ## CLI
 
 ```sh
-proof-templates list [--tag tag] [--category category] [--system noir|circom]
+proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental]
 proof-templates show <id> [--json]
 proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
 proof-templates tags
@@ -76,6 +89,7 @@ Each template in `templates/catalog.json` includes:
 
 - `id`, `title`, `summary`, and `category`
 - supported `systems`, currently `noir` and `circom`
+- `maturity`, currently used to distinguish starter patterns from experimental AI/ZK patterns
 - public and private input descriptions
 - the proof statement in plain language
 - core constraints the circuit must enforce

@@ -33,7 +33,7 @@
       "type": "string"
     },
     "maturity": {
-      "enum": ["starter", "reviewed", "audited"]
+      "enum": ["starter", "experimental", "reviewed", "production-pattern", "audited"]
     },
     "systems": {
       "type": "array",

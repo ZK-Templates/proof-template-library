@@ -711,5 +711,351 @@
         "output": "src/main.nr"
       }
     ]
+  },
+  {
+    "id": "verifiable-ai-inference",
+    "title": "Verifiable AI Inference",
+    "summary": "Prove a committed model produced a committed output from committed inputs.",
+    "category": "ai",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["ai", "zkml", "inference", "model-integrity"],
+    "statement": "I know private inference inputs and witness data showing this model commitment produced the public output commitment.",
+    "publicInputs": [
+      {
+        "name": "model_commitment",
+        "type": "Field",
+        "description": "Commitment to the model architecture, weights, and quantization profile."
+      },
+      {
+        "name": "input_commitment",
+        "type": "Field",
+        "description": "Commitment to the private inference input."
+      },
+      {
+        "name": "output_commitment",
+        "type": "Field",
+        "description": "Commitment to the model output or prediction."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "input_digest",
+        "type": "Field",
+        "description": "Private digest of the inference input."
+      },
+      {
+        "name": "output_digest",
+        "type": "Field",
+        "description": "Private digest of the inference output."
+      },
+      {
+        "name": "inference_secret",
+        "type": "Field",
+        "description": "Private witness material for the inference run."
+      }
+    ],
+    "constraints": [
+      "input_commitment binds input_digest and model_commitment",
+      "output_commitment binds output_digest and inference_secret",
+      "inference_secret is tied to model_commitment"
+    ],
+    "securityNotes": [
+      "This starter is a commitment shell; real zkML requires generated inference constraints or a zkVM receipt.",
+      "Model quantization, preprocessing, and output decoding must be versioned.",
+      "Do not claim model correctness without validating the ML compilation pipeline."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/verifiable-ai-inference.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "private-prompt-evaluation",
+    "title": "Private Prompt Evaluation",
+    "summary": "Prove a private prompt satisfies a policy score threshold without revealing the prompt.",
+    "category": "ai",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["ai", "prompt", "policy", "privacy"],
+    "statement": "I know a private prompt and evaluation score that satisfy the public policy threshold.",
+    "publicInputs": [
+      {
+        "name": "policy_commitment",
+        "type": "Field",
+        "description": "Commitment to the prompt policy or evaluator version."
+      },
+      {
+        "name": "minimum_score",
+        "type": "u32",
+        "description": "Minimum acceptable policy score."
+      },
+      {
+        "name": "prompt_commitment",
+        "type": "Field",
+        "description": "Commitment to the private prompt."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "prompt_digest",
+        "type": "Field",
+        "description": "Private digest of the prompt text."
+      },
+      {
+        "name": "score",
+        "type": "u32",
+        "description": "Private evaluator score."
+      },
+      {
+        "name": "prompt_secret",
+        "type": "Field",
+        "description": "Secret opening for the prompt commitment."
+      }
+    ],
+    "constraints": [
+      "score >= minimum_score",
+      "prompt_commitment binds prompt_digest and prompt_secret",
+      "policy_commitment is included in the prompt evaluation binding"
+    ],
+    "securityNotes": [
+      "Prompt canonicalization must happen before commitment.",
+      "Policy evaluators can leak sensitive categories through threshold choice.",
+      "Use separate policies for safety, compliance, and quality scoring."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/private-prompt-evaluation.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "ai-agent-action-receipt",
+    "title": "AI Agent Action Receipt",
+    "summary": "Prove an AI agent executed an approved workflow or tool-call sequence.",
+    "category": "ai",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["ai", "agent", "receipt", "workflow"],
+    "statement": "I know an agent action trace whose commitments match the approved workflow and final receipt.",
+    "publicInputs": [
+      {
+        "name": "workflow_commitment",
+        "type": "Field",
+        "description": "Commitment to the approved workflow or tool policy."
+      },
+      {
+        "name": "receipt_commitment",
+        "type": "Field",
+        "description": "Commitment to the final agent action receipt."
+      },
+      {
+        "name": "agent_id",
+        "type": "Field",
+        "description": "Identifier or commitment for the agent identity."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "trace_digest",
+        "type": "Field",
+        "description": "Private digest of the tool-call trace."
+      },
+      {
+        "name": "approval_secret",
+        "type": "Field",
+        "description": "Secret binding the trace to the approved workflow."
+      }
+    ],
+    "constraints": [
+      "receipt_commitment binds trace_digest and agent_id",
+      "workflow_commitment is included in the approval binding",
+      "approval_secret ties the private trace to the public workflow commitment"
+    ],
+    "securityNotes": [
+      "This proves a committed trace shape, not that external tools behaved honestly.",
+      "Tool schemas and policy versions must be pinned.",
+      "Use nullifiers or sequence numbers to prevent replaying old agent receipts."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/ai-agent-action-receipt.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "model-version-proof",
+    "title": "Model Version Proof",
+    "summary": "Prove an output is bound to a specific model version and deployment epoch.",
+    "category": "ai",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["ai", "model-version", "attestation", "integrity"],
+    "statement": "I know private output witness data bound to the public model version and deployment epoch.",
+    "publicInputs": [
+      {
+        "name": "model_version_hash",
+        "type": "Field",
+        "description": "Hash of model weights, architecture, tokenizer, and runtime settings."
+      },
+      {
+        "name": "deployment_epoch",
+        "type": "Field",
+        "description": "Versioned deployment or release window."
+      },
+      {
+        "name": "output_commitment",
+        "type": "Field",
+        "description": "Commitment to the generated output."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "output_digest",
+        "type": "Field",
+        "description": "Private output digest."
+      },
+      {
+        "name": "version_secret",
+        "type": "Field",
+        "description": "Secret opening for the model-version binding."
+      }
+    ],
+    "constraints": [
+      "output_commitment binds output_digest and model_version_hash",
+      "deployment_epoch is included in the version binding",
+      "version_secret opens the model-version claim"
+    ],
+    "securityNotes": [
+      "Include tokenizer, quantization, runtime flags, and prompt template in the version hash.",
+      "This template proves binding to a version, not quality or truthfulness.",
+      "Rotate deployment epochs when model-serving configuration changes."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/model-version-proof.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "private-classification-threshold",
+    "title": "Private Classification Threshold",
+    "summary": "Prove a private AI classification score clears a public threshold.",
+    "category": "ai",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["ai", "classification", "threshold", "zkml"],
+    "statement": "I know a private class score and committed input proving the score meets the verifier threshold.",
+    "publicInputs": [
+      {
+        "name": "class_id",
+        "type": "Field",
+        "description": "Target class or category being proven."
+      },
+      {
+        "name": "minimum_score",
+        "type": "u32",
+        "description": "Required score for the target class."
+      },
+      {
+        "name": "input_commitment",
+        "type": "Field",
+        "description": "Commitment to the private classified input."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "score",
+        "type": "u32",
+        "description": "Private score for the target class."
+      },
+      {
+        "name": "input_secret",
+        "type": "Field",
+        "description": "Secret opening for the classified input."
+      }
+    ],
+    "constraints": [
+      "score >= minimum_score",
+      "score is range-constrained to the model score scale",
+      "input_commitment is bound to class_id and input_secret"
+    ],
+    "securityNotes": [
+      "Document score scaling, rounding, and threshold semantics.",
+      "A threshold claim can still reveal sensitive class membership.",
+      "Use generated model constraints when proving actual inference rather than a signed score."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/private-classification-threshold.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "confidential-dataset-eligibility",
+    "title": "Confidential Dataset Eligibility",
+    "summary": "Prove a private dataset meets training or evaluation requirements without exposing records.",
+    "category": "ai",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["ai", "dataset", "compliance", "privacy"],
+    "statement": "I know dataset metadata and commitments proving the dataset meets public eligibility requirements.",
+    "publicInputs": [
+      {
+        "name": "policy_commitment",
+        "type": "Field",
+        "description": "Commitment to the dataset eligibility policy."
+      },
+      {
+        "name": "dataset_commitment",
+        "type": "Field",
+        "description": "Commitment to the private dataset or metadata root."
+      },
+      {
+        "name": "minimum_records",
+        "type": "u32",
+        "description": "Minimum required record count."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "record_count",
+        "type": "u32",
+        "description": "Private number of dataset records."
+      },
+      {
+        "name": "metadata_secret",
+        "type": "Field",
+        "description": "Secret opening for dataset metadata."
+      }
+    ],
+    "constraints": [
+      "record_count >= minimum_records",
+      "dataset_commitment binds record_count and metadata_secret",
+      "policy_commitment is included in the eligibility binding"
+    ],
+    "securityNotes": [
+      "Dataset quality, consent, and provenance require off-chain governance too.",
+      "Aggregate metadata can still leak sensitive cohort information.",
+      "Use separate commitments for records, labels, provenance, and consent status when needed."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/confidential-dataset-eligibility.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
   }
 ]

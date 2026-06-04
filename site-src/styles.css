@@ -85,6 +85,21 @@ main {
   align-items: end;
 }
 
+.release-pill {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  border: 1px solid #6d55d8;
+  border-radius: 999px;
+  background: #eeeafd;
+  color: #4b32b8;
+  padding: 0 11px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
 .intro p {
   max-width: 720px;
   margin-top: 14px;
@@ -111,7 +126,7 @@ code {
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, 220px));
+  grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(150px, 210px));
   gap: 12px;
   border-block: 1px solid var(--line);
   padding-block: 18px;
@@ -199,6 +214,34 @@ h3 {
   padding: 5px 8px;
   color: #3b2b05;
   font-size: 0.78rem;
+}
+
+.maturity {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.maturity-starter {
+  background: #dff4ea;
+  color: #0f5c41;
+}
+
+.maturity-experimental {
+  background: #eeeafd;
+  color: #4b32b8;
+}
+
+.maturity-reviewed {
+  background: #e5f0ff;
+  color: #184b8c;
+}
+
+.maturity-production-pattern,
+.maturity-audited {
+  background: #fff1c6;
+  color: #6c4a00;
 }
 
 .summary,
