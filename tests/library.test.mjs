@@ -8,26 +8,32 @@ import { getCategories, getTags, getTemplate, listTemplates, scaffoldTemplate } 
 test("catalog exposes starter proof templates", () => {
   const templates = listTemplates();
 
-  assert.equal(templates.length, 18);
+  assert.equal(templates.length, 24);
   assert.deepEqual(
     templates.map((template) => template.id).sort(),
     [
       "age-gate",
       "ai-agent-action-receipt",
+      "ai-agent-risk-guard",
       "anonymous-rate-limit",
       "anonymous-vote",
       "confidential-dataset-eligibility",
+      "dividend-entitlement-proof",
       "email-domain",
       "geo-eligibility",
       "group-membership",
       "model-version-proof",
       "private-allowlist",
       "private-classification-threshold",
+      "private-portfolio-exposure",
       "private-prompt-evaluation",
       "private-reputation",
+      "private-rwa-trading-eligibility",
       "proof-of-reserves",
       "range-proof",
+      "rwa-compliance-hook",
       "token-ownership",
+      "tokenized-asset-backing",
       "verifiable-ai-inference",
       "web-data-attestation"
     ]
@@ -37,11 +43,14 @@ test("catalog exposes starter proof templates", () => {
 test("templates can be filtered by system, category, and tag", () => {
   assert.equal(listTemplates({ system: "circom" }).length, 1);
   assert.equal(listTemplates({ category: "ai" }).length, 6);
+  assert.equal(listTemplates({ category: "rwa" }).length, 6);
   assert.equal(listTemplates({ category: "identity" }).length, 4);
   assert.equal(listTemplates({ category: "data" }).length, 2);
-  assert.equal(listTemplates({ maturity: "experimental" }).length, 4);
+  assert.equal(listTemplates({ maturity: "experimental" }).length, 8);
   assert.ok(listTemplates({ tag: "merkle" }).some((template) => template.id === "group-membership"));
   assert.ok(listTemplates({ tag: "ai" }).some((template) => template.id === "verifiable-ai-inference"));
+  assert.ok(listTemplates({ tag: "rwa" }).some((template) => template.id === "private-rwa-trading-eligibility"));
+  assert.ok(listTemplates({ tag: "uniswap-v4" }).some((template) => template.id === "rwa-compliance-hook"));
   assert.ok(listTemplates({ tag: "attestation" }).some((template) => template.id === "web-data-attestation"));
 });
 
@@ -81,4 +90,21 @@ test("scaffold writes docs, metadata, example inputs, and starter circuit", () =
   assert.match(readme, /Age Gate/);
   assert.match(circuit, /fn main/);
   assert.deepEqual(Object.keys(inputs.publicInputs), ["current_year", "minimum_age", "identity_commitment"]);
+});
+
+test("tokenized markets templates scaffold RWA starters", () => {
+  const outDir = mkdtempSync(join(tmpdir(), "rwa-template-"));
+  const result = scaffoldTemplate("private-rwa-trading-eligibility", { outDir, system: "noir" });
+
+  assert.equal(result.template.category, "rwa");
+  assert.equal(result.template.maturity, "experimental");
+  assert.ok(result.written.some((file) => file.endsWith("src/main.nr")));
+
+  const readme = readFileSync(join(outDir, "README.md"), "utf8");
+  const circuit = readFileSync(join(outDir, "src", "main.nr"), "utf8");
+  const inputs = JSON.parse(readFileSync(join(outDir, "inputs.example.json"), "utf8"));
+
+  assert.match(readme, /Private RWA Trading Eligibility/);
+  assert.match(circuit, /wallet_binding/);
+  assert.deepEqual(Object.keys(inputs.publicInputs), ["policy_commitment", "credential_root", "wallet_binding"]);
 });

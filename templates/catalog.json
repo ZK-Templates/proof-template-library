@@ -1057,5 +1057,381 @@
         "output": "src/main.nr"
       }
     ]
+  },
+  {
+    "id": "private-rwa-trading-eligibility",
+    "title": "Private RWA Trading Eligibility",
+    "summary": "Prove a wallet is eligible to trade a tokenized stock or ETF without exposing identity documents.",
+    "category": "rwa",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["rwa", "tokenized-stocks", "compliance", "eligibility", "kyc"],
+    "statement": "I know a private eligibility credential proving this wallet can trade the asset under the verifier policy.",
+    "publicInputs": [
+      {
+        "name": "policy_commitment",
+        "type": "Field",
+        "description": "Commitment to the trading eligibility policy, including asset class and jurisdiction rules."
+      },
+      {
+        "name": "credential_root",
+        "type": "Field",
+        "description": "Merkle root or issuer commitment for valid eligibility credentials."
+      },
+      {
+        "name": "wallet_binding",
+        "type": "Field",
+        "description": "Public binding between the proof and the wallet or session requesting access."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "credential_secret",
+        "type": "Field",
+        "description": "Private credential secret used to derive the eligible leaf."
+      },
+      {
+        "name": "jurisdiction_code",
+        "type": "u32",
+        "description": "Private jurisdiction or eligibility tier encoded by the issuer."
+      },
+      {
+        "name": "policy_min_tier",
+        "type": "u32",
+        "description": "Private tier or policy mapping value asserted by the credential issuer."
+      }
+    ],
+    "constraints": [
+      "credential_secret is bound to wallet_binding",
+      "jurisdiction_code or issuer tier satisfies the policy commitment",
+      "credential leaf is included in credential_root"
+    ],
+    "securityNotes": [
+      "Do not encode restricted jurisdictions directly as public inputs unless disclosure is intentional.",
+      "Policy commitments should include chain ID, asset identifier, verifier address, and policy version.",
+      "Legal eligibility for securities is jurisdiction-specific; treat this as a circuit scaffold, not legal advice."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/private-rwa-trading-eligibility.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "rwa-compliance-hook",
+    "title": "RWA Compliance Hook",
+    "summary": "Gate tokenized-stock swaps or liquidity actions with a reusable proof for policy-compliant access.",
+    "category": "rwa",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["rwa", "uniswap-v4", "hooks", "compliance", "defi"],
+    "statement": "I know an eligibility proof secret whose nullifier and swap intent match this market policy.",
+    "publicInputs": [
+      {
+        "name": "hook_policy_commitment",
+        "type": "Field",
+        "description": "Commitment to the hook policy used by the pool or routing layer."
+      },
+      {
+        "name": "swap_intent_hash",
+        "type": "Field",
+        "description": "Hash of chain, pool, asset, side, recipient, and execution window."
+      },
+      {
+        "name": "access_nullifier",
+        "type": "Field",
+        "description": "Public nullifier for replay or rate-limit checks outside the circuit."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "credential_secret",
+        "type": "Field",
+        "description": "Private credential secret authorizing access."
+      },
+      {
+        "name": "intent_secret",
+        "type": "Field",
+        "description": "Private opening that binds this proof to the swap intent."
+      }
+    ],
+    "constraints": [
+      "access_nullifier is derived from credential_secret and swap_intent_hash",
+      "hook_policy_commitment is included in the authorization binding",
+      "intent_secret binds the private authorization to the public swap intent"
+    ],
+    "securityNotes": [
+      "A hook or router must reject reused nullifiers and stale execution windows.",
+      "Bind proofs to a specific chain, pool manager, token pair, and recipient to prevent cross-market replay.",
+      "This template does not decide whether a public AMM can legally list or route a particular asset."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/rwa-compliance-hook.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "ai-agent-risk-guard",
+    "title": "AI Agent Risk Guard",
+    "summary": "Prove an AI trading agent stayed within private order, asset, leverage, and loss limits.",
+    "category": "rwa",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["rwa", "ai", "agent", "risk", "trading"],
+    "statement": "I know a private agent policy and proposed action proving the action stays inside approved trading limits.",
+    "publicInputs": [
+      {
+        "name": "agent_id",
+        "type": "Field",
+        "description": "Public identifier or commitment for the trading agent."
+      },
+      {
+        "name": "policy_commitment",
+        "type": "Field",
+        "description": "Commitment to the agent risk policy."
+      },
+      {
+        "name": "action_commitment",
+        "type": "Field",
+        "description": "Commitment to the proposed or executed trading action."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "order_notional",
+        "type": "u128",
+        "description": "Private order notional in a fixed quote-unit scale."
+      },
+      {
+        "name": "max_order_notional",
+        "type": "u128",
+        "description": "Private maximum notional allowed by the policy."
+      },
+      {
+        "name": "daily_loss",
+        "type": "u128",
+        "description": "Private realized or marked loss for the current policy window."
+      },
+      {
+        "name": "max_daily_loss",
+        "type": "u128",
+        "description": "Private maximum loss allowed by the policy."
+      },
+      {
+        "name": "policy_secret",
+        "type": "Field",
+        "description": "Secret opening for the risk policy commitment."
+      }
+    ],
+    "constraints": [
+      "order_notional <= max_order_notional",
+      "daily_loss <= max_daily_loss",
+      "action_commitment binds agent_id, order_notional, and policy_commitment"
+    ],
+    "securityNotes": [
+      "Use fixed-point scales and overflow-safe bounds for all monetary inputs.",
+      "External price oracles and order execution receipts must be authenticated outside the starter circuit.",
+      "Policy commitments should include allowed assets, leverage limits, venues, expiry, and controller identity."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/ai-agent-risk-guard.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "private-portfolio-exposure",
+    "title": "Private Portfolio Exposure",
+    "summary": "Prove a trade keeps portfolio exposure below a public risk limit without revealing holdings.",
+    "category": "rwa",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["rwa", "portfolio", "risk", "collateral", "tokenized-stocks"],
+    "statement": "I know private holdings and proposed trade values proving post-trade exposure remains under the verifier limit.",
+    "publicInputs": [
+      {
+        "name": "asset_id",
+        "type": "Field",
+        "description": "Asset, sector, or risk bucket being constrained."
+      },
+      {
+        "name": "max_exposure_bps",
+        "type": "u32",
+        "description": "Maximum allowed exposure in basis points."
+      },
+      {
+        "name": "portfolio_commitment",
+        "type": "Field",
+        "description": "Commitment to private portfolio balances and valuation inputs."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "post_trade_asset_value",
+        "type": "u128",
+        "description": "Private post-trade value for the constrained asset or bucket."
+      },
+      {
+        "name": "post_trade_portfolio_value",
+        "type": "u128",
+        "description": "Private post-trade total portfolio value."
+      },
+      {
+        "name": "portfolio_secret",
+        "type": "Field",
+        "description": "Secret opening for the portfolio commitment."
+      }
+    ],
+    "constraints": [
+      "post_trade_asset_value * 10000 <= post_trade_portfolio_value * max_exposure_bps",
+      "post_trade_portfolio_value is nonzero",
+      "portfolio_commitment binds asset_id, valuations, and portfolio_secret"
+    ],
+    "securityNotes": [
+      "Use authenticated price feeds and fixed valuation timestamps.",
+      "Large public risk buckets can still leak strategy through repeated proofs.",
+      "Consider separate proofs for issuer concentration, sector exposure, leverage, and collateral haircuts."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/private-portfolio-exposure.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "dividend-entitlement-proof",
+    "title": "Dividend Entitlement Proof",
+    "summary": "Prove entitlement to a tokenized-stock distribution from a private balance snapshot.",
+    "category": "rwa",
+    "maturity": "starter",
+    "systems": ["noir"],
+    "tags": ["rwa", "dividends", "snapshot", "merkle", "claims"],
+    "statement": "I know a private balance snapshot included in the distribution root and can claim once with a nullifier.",
+    "publicInputs": [
+      {
+        "name": "snapshot_root",
+        "type": "Field",
+        "description": "Merkle root for balances eligible at the dividend snapshot."
+      },
+      {
+        "name": "distribution_id",
+        "type": "Field",
+        "description": "Identifier for the dividend, issuer action, or distribution epoch."
+      },
+      {
+        "name": "claim_nullifier",
+        "type": "Field",
+        "description": "Public nullifier used to prevent duplicate claims."
+      },
+      {
+        "name": "minimum_balance",
+        "type": "u128",
+        "description": "Minimum eligible balance for the claim tier."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "holder_secret",
+        "type": "Field",
+        "description": "Private holder secret used to derive the snapshot leaf."
+      },
+      {
+        "name": "snapshot_balance",
+        "type": "u128",
+        "description": "Private token balance at the snapshot."
+      },
+      {
+        "name": "path_digest",
+        "type": "Field",
+        "description": "Placeholder for the private Merkle path witness."
+      }
+    ],
+    "constraints": [
+      "snapshot_balance >= minimum_balance",
+      "claim_nullifier is derived from holder_secret and distribution_id",
+      "snapshot leaf resolves to snapshot_root"
+    ],
+    "securityNotes": [
+      "Replace the path digest placeholder with a real Merkle path verifier.",
+      "Distribution contracts must reject reused claim nullifiers.",
+      "Decide whether claim amounts should be private, public, or tiered before final circuit design."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/dividend-entitlement-proof.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
+  },
+  {
+    "id": "tokenized-asset-backing",
+    "title": "Tokenized Asset Backing",
+    "summary": "Prove issued tokenized-asset supply is covered by private custodied inventory or attestations.",
+    "category": "rwa",
+    "maturity": "experimental",
+    "systems": ["noir"],
+    "tags": ["rwa", "issuer", "reserves", "attestation", "audit"],
+    "statement": "I know private backing records proving custodied or attested assets cover outstanding token supply.",
+    "publicInputs": [
+      {
+        "name": "issued_supply",
+        "type": "u128",
+        "description": "Public outstanding token supply for the asset or reporting epoch."
+      },
+      {
+        "name": "backing_commitment",
+        "type": "Field",
+        "description": "Commitment to private custodian records, broker statements, or backing attestations."
+      },
+      {
+        "name": "reporting_epoch",
+        "type": "Field",
+        "description": "Reporting window for this backing proof."
+      }
+    ],
+    "privateInputs": [
+      {
+        "name": "backed_units",
+        "type": "u128",
+        "description": "Private count of underlying units or equivalent backing amount."
+      },
+      {
+        "name": "haircut_bps",
+        "type": "u32",
+        "description": "Private haircut applied to backing records in basis points."
+      },
+      {
+        "name": "attestation_secret",
+        "type": "Field",
+        "description": "Secret opening for backing records."
+      }
+    ],
+    "constraints": [
+      "effective_backing = backed_units * haircut_bps / 10000",
+      "effective_backing >= issued_supply",
+      "backing_commitment binds backed_units, reporting_epoch, and attestation_secret"
+    ],
+    "securityNotes": [
+      "This template complements, but does not replace, regulated custodian or auditor attestations.",
+      "Decimals, share splits, redemptions, and corporate actions must be normalized before proving.",
+      "Publish reporting cadence and clearly separate liabilities, inventory, and pledged collateral."
+    ],
+    "starterFiles": [
+      {
+        "system": "noir",
+        "source": "templates/scaffolds/tokenized-asset-backing.noir.nr",
+        "output": "src/main.nr"
+      }
+    ]
   }
 ]

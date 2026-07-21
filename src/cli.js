@@ -127,7 +127,7 @@ function printHelp() {
   console.log(`Proof Template Library
 
 Usage:
-  proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern]
+  proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern|audited]
   proof-templates show <id> [--json]
   proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
   proof-templates tags

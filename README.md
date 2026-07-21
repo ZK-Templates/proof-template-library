@@ -2,7 +2,7 @@
 
 A starter library of reusable zero-knowledge proof templates. It gives a project team a shared catalog of proof patterns, their public/private inputs, security notes, and starter circuit files.
 
-The catalog focuses on templates that show up often in privacy-preserving apps, including a new AI pack for verifiable agents and private AI workflows:
+The catalog focuses on templates that show up often in privacy-preserving apps, including AI workflows and a new Tokenized Markets Pack for RWA, tokenized-stock, compliance-hook, and AI trading-agent use cases:
 
 - Age Gate
 - Group Membership
@@ -22,8 +22,27 @@ The catalog focuses on templates that show up often in privacy-preserving apps, 
 - Model Version Proof
 - Private Classification Threshold
 - Confidential Dataset Eligibility
+- Private RWA Trading Eligibility
+- RWA Compliance Hook
+- AI Agent Risk Guard
+- Private Portfolio Exposure
+- Dividend Entitlement Proof
+- Tokenized Asset Backing
 
 Templates include maturity labels such as `starter` and `experimental`. They are not audited production circuits. Treat them as implementation scaffolds and review checklists.
+
+## Tokenized Markets Pack
+
+The Tokenized Markets Pack gives builders a commercial set of ZK patterns for tokenized stocks, ETFs, RWAs, policy-gated swaps, and AI-assisted trading flows:
+
+- prove trading eligibility without exposing KYC records or jurisdiction documents
+- gate tokenized-asset execution through hook or router proof checks
+- prove AI trading agents stayed inside private risk limits
+- prove portfolio concentration remains below a public threshold
+- prove dividend or distribution entitlement from a private snapshot
+- prove issued token supply is covered by private backing records or attestations
+
+See [docs/tokenized-markets-pack.md](docs/tokenized-markets-pack.md) for integration notes.
 
 ## Quick Start
 
@@ -60,7 +79,7 @@ npm run build:site
 ## CLI
 
 ```sh
-proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental]
+proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern|audited]
 proof-templates show <id> [--json]
 proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
 proof-templates tags
@@ -89,7 +108,7 @@ Each template in `templates/catalog.json` includes:
 
 - `id`, `title`, `summary`, and `category`
 - supported `systems`, currently `noir` and `circom`
-- `maturity`, currently used to distinguish starter patterns from experimental AI/ZK patterns
+- `maturity`, currently used to distinguish starter patterns from experimental AI/ZK and RWA patterns
 - public and private input descriptions
 - the proof statement in plain language
 - core constraints the circuit must enforce

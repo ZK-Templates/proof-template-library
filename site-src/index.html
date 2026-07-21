@@ -18,16 +18,43 @@
     <main>
       <section class="intro">
         <div>
-          <div class="release-pill">New: AI proof templates</div>
+          <div class="release-pill">New: Tokenized Markets Pack</div>
           <h2>Reusable proof patterns for ZK apps</h2>
           <p>
             Browse starter proof templates with public inputs, private witnesses,
-            implementation constraints, and security review notes.
+            implementation constraints, security review notes, and commercial
+            patterns for AI agents, RWAs, and tokenized-stock workflows.
           </p>
         </div>
         <div class="commands" aria-label="CLI commands">
           <code>node src/cli.js list</code>
-          <code>node src/cli.js scaffold age-gate --system noir</code>
+          <code>node src/cli.js list --category rwa</code>
+          <code>node src/cli.js scaffold private-rwa-trading-eligibility --system noir</code>
+        </div>
+      </section>
+
+      <section class="release-panel" aria-label="Tokenized Markets Pack">
+        <div>
+          <p class="eyebrow">Commercial pack</p>
+          <h2>Privacy rails for tokenized markets</h2>
+          <p>
+            Eligibility, compliance hooks, AI trading guardrails, portfolio risk,
+            dividend claims, and issuer backing proofs for builders bringing real-world assets onchain.
+          </p>
+        </div>
+        <div class="release-grid">
+          <a href="#templates" data-filter-category="rwa">
+            <strong>RWA templates</strong>
+            <span>Browse the tokenized markets catalog.</span>
+          </a>
+          <a href="https://github.com/ZK-Templates/proof-template-library/blob/main/docs/tokenized-markets-pack.md" target="_blank" rel="noreferrer">
+            <strong>Integration guide</strong>
+            <span>See how the pack wires into apps, hooks, routers, and issuer portals.</span>
+          </a>
+          <a href="https://github.com/ZK-Templates/proof-template-library/tree/main/templates/scaffolds" target="_blank" rel="noreferrer">
+            <strong>Noir starters</strong>
+            <span>Open the starter circuits for the new pack.</span>
+          </a>
         </div>
       </section>
 
@@ -95,6 +122,13 @@
 
       for (const element of [searchElement, categoryElement, systemElement, maturityElement]) {
         element.addEventListener("input", render);
+      }
+
+      for (const link of document.querySelectorAll("[data-filter-category]")) {
+        link.addEventListener("click", () => {
+          categoryElement.value = link.dataset.filterCategory;
+          render();
+        });
       }
 
       render();
