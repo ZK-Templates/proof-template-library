@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getCategories, getTags, getTemplate, listTemplates, scaffoldTemplate } from "../src/index.js";
+import { getCategories, getTags, getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "../src/index.js";
 
 test("catalog exposes starter proof templates", () => {
   const templates = listTemplates();
@@ -107,4 +107,20 @@ test("tokenized markets templates scaffold RWA starters", () => {
   assert.match(readme, /Private RWA Trading Eligibility/);
   assert.match(circuit, /wallet_binding/);
   assert.deepEqual(Object.keys(inputs.publicInputs), ["policy_commitment", "credential_root", "wallet_binding"]);
+});
+
+test("proof rails recommends templates from policy and intent manifests", () => {
+  const policy = JSON.parse(readFileSync("integrations/proof-rails/agent-policy.example.json", "utf8"));
+  const intent = JSON.parse(readFileSync("integrations/proof-rails/trade-intent.example.json", "utf8"));
+  const plan = recommendProofRails(policy, intent);
+
+  assert.equal(plan.policyId, "rwa-agent-policy-v1");
+  assert.equal(plan.intentId, "intent:buy-tokenized-equity-demo");
+  assert.deepEqual(plan.requiredTemplates, [
+    "ai-agent-risk-guard",
+    "private-rwa-trading-eligibility",
+    "rwa-compliance-hook",
+    "private-portfolio-exposure"
+  ]);
+  assert.ok(plan.checks.every((check) => ["pass", "ready"].includes(check.status)));
 });

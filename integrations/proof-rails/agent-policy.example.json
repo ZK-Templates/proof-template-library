@@ -1,0 +1,34 @@
+{
+  "id": "rwa-agent-policy-v1",
+  "scope": ["rwa", "tokenized-stock", "ai-agent"],
+  "units": {
+    "notional": "usd-cents"
+  },
+  "agent": {
+    "id": "agent:market-maker-demo",
+    "controller": "0x0000000000000000000000000000000000000000"
+  },
+  "eligibility": {
+    "required": true,
+    "credentialRoot": "0xcredentialroot",
+    "policyCommitment": "0xeligibilitypolicy"
+  },
+  "execution": {
+    "mode": "hook",
+    "venue": "uniswap-v4-style-pool",
+    "bindToChainId": true,
+    "bindToVerifier": true,
+    "maxIntentAgeSeconds": 90
+  },
+  "limits": {
+    "maxOrderNotional": 2500000,
+    "maxDailyLoss": 1000000,
+    "maxPortfolioExposureBps": 1800
+  },
+  "proofRequirements": [
+    "ai-agent-risk-guard",
+    "private-rwa-trading-eligibility",
+    "rwa-compliance-hook",
+    "private-portfolio-exposure"
+  ]
+}

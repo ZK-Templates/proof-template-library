@@ -44,6 +44,18 @@ The Tokenized Markets Pack gives builders a commercial set of ZK patterns for to
 
 See [docs/tokenized-markets-pack.md](docs/tokenized-markets-pack.md) for integration notes.
 
+## Proof Rails Pack
+
+The Proof Rails Pack turns the Tokenized Markets templates into a concrete integration workflow. Builders can define an agent policy, pass a proposed trade intent, and get the recommended proofs before execution.
+
+```sh
+node src/cli.js rails \
+  --policy integrations/proof-rails/agent-policy.example.json \
+  --intent integrations/proof-rails/trade-intent.example.json
+```
+
+It includes reference manifests and EVM-style verifier/hook adapters under `integrations/`. See [docs/proof-rails-pack.md](docs/proof-rails-pack.md).
+
 ## Quick Start
 
 List every template:
@@ -82,6 +94,7 @@ npm run build:site
 proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern|audited]
 proof-templates show <id> [--json]
 proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
+proof-templates rails --policy path --intent path [--json]
 proof-templates tags
 proof-templates categories
 ```
@@ -91,7 +104,7 @@ During local development, use `node src/cli.js ...` instead of the installed `pr
 ## JavaScript API
 
 ```js
-import { getTemplate, listTemplates, scaffoldTemplate } from "./src/index.js";
+import { getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "./src/index.js";
 
 const identityTemplates = listTemplates({ category: "identity" });
 const ageGate = getTemplate("age-gate");
@@ -100,6 +113,8 @@ scaffoldTemplate("age-gate", {
   system: "noir",
   outDir: "./examples/age-gate"
 });
+
+const railPlan = recommendProofRails(policyManifest, tradeIntent);
 ```
 
 ## Template Shape

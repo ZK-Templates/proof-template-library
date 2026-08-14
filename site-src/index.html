@@ -36,7 +36,7 @@
       <section class="release-panel" aria-label="Tokenized Markets Pack">
         <div>
           <p class="eyebrow">Commercial pack</p>
-          <h2>Privacy rails for tokenized markets</h2>
+          <h2>Proof rails for tokenized markets</h2>
           <p>
             Eligibility, compliance hooks, AI trading guardrails, portfolio risk,
             dividend claims, and issuer backing proofs for builders bringing real-world assets onchain.
@@ -55,6 +55,52 @@
             <strong>Noir starters</strong>
             <span>Open the starter circuits for the new pack.</span>
           </a>
+        </div>
+      </section>
+
+      <section class="rails-demo" aria-label="Proof Rails demo">
+        <div class="rails-copy">
+          <p class="eyebrow">Proof Rails Pack</p>
+          <h2>Match an agent trade to the right proofs</h2>
+          <p>
+            Start from an agent policy and a proposed tokenized-market intent.
+            The demo recommends the proof templates a hook, router, or app would check before execution.
+          </p>
+          <div class="commands" aria-label="Proof Rails CLI command">
+            <code>node src/cli.js rails --policy integrations/proof-rails/agent-policy.example.json --intent integrations/proof-rails/trade-intent.example.json</code>
+          </div>
+        </div>
+
+        <form class="rails-controls" id="rails-form">
+          <label>
+            Scenario
+            <select id="rails-scenario">
+              <option value="standard">Agent trade inside policy</option>
+              <option value="breach">Order exceeds risk rail</option>
+              <option value="distribution">Distribution claim</option>
+              <option value="issuer">Issuer backing report</option>
+            </select>
+          </label>
+          <label>
+            Order notional
+            <input id="rails-notional" type="number" min="0" step="10000">
+          </label>
+          <label>
+            Daily loss
+            <input id="rails-loss" type="number" min="0" step="10000">
+          </label>
+          <label>
+            Exposure bps
+            <input id="rails-exposure" type="number" min="0" max="10000" step="50">
+          </label>
+        </form>
+
+        <div class="rails-output">
+          <div class="section-heading">
+            <h3>Recommended rails</h3>
+            <span id="rails-count"></span>
+          </div>
+          <div id="rails-results" class="rails-results"></div>
         </div>
       </section>
 
@@ -101,6 +147,69 @@
       const categoryElement = document.querySelector("#category");
       const systemElement = document.querySelector("#system");
       const maturityElement = document.querySelector("#maturity");
+      const railsScenarioElement = document.querySelector("#rails-scenario");
+      const railsNotionalElement = document.querySelector("#rails-notional");
+      const railsLossElement = document.querySelector("#rails-loss");
+      const railsExposureElement = document.querySelector("#rails-exposure");
+      const railsCountElement = document.querySelector("#rails-count");
+      const railsResultsElement = document.querySelector("#rails-results");
+
+      const proofRailsTemplateMap = {
+        agentRisk: "ai-agent-risk-guard",
+        tradingEligibility: "private-rwa-trading-eligibility",
+        executionHook: "rwa-compliance-hook",
+        portfolioExposure: "private-portfolio-exposure",
+        dividendEntitlement: "dividend-entitlement-proof",
+        issuerBacking: "tokenized-asset-backing"
+      };
+
+      const railsPolicy = {
+        id: "rwa-agent-policy-v1",
+        scope: ["rwa", "tokenized-stock", "ai-agent"],
+        units: { notional: "usd-cents" },
+        agent: { id: "agent:market-maker-demo" },
+        eligibility: { required: true },
+        execution: { mode: "hook" },
+        limits: {
+          maxOrderNotional: 2500000,
+          maxDailyLoss: 1000000,
+          maxPortfolioExposureBps: 1800
+        },
+        issuer: {
+          requiresBackingProof: false
+        }
+      };
+
+      const railsScenarios = {
+        standard: {
+          orderNotional: 1250000,
+          dailyLoss: 420000,
+          exposureBps: 1450,
+          distributionClaim: false,
+          issuerBacking: false
+        },
+        breach: {
+          orderNotional: 3400000,
+          dailyLoss: 1200000,
+          exposureBps: 2300,
+          distributionClaim: false,
+          issuerBacking: false
+        },
+        distribution: {
+          orderNotional: 0,
+          dailyLoss: 0,
+          exposureBps: 900,
+          distributionClaim: true,
+          issuerBacking: false
+        },
+        issuer: {
+          orderNotional: 0,
+          dailyLoss: 0,
+          exposureBps: 0,
+          distributionClaim: false,
+          issuerBacking: true
+        }
+      };
 
       const categories = [...new Set(catalog.map((template) => template.category))].sort();
       const systems = [...new Set(catalog.flatMap((template) => template.systems))].sort();
@@ -124,6 +233,12 @@
         element.addEventListener("input", render);
       }
 
+      for (const element of [railsScenarioElement, railsNotionalElement, railsLossElement, railsExposureElement]) {
+        element.addEventListener("input", renderRailsDemo);
+      }
+
+      railsScenarioElement.addEventListener("change", hydrateRailsScenario);
+
       for (const link of document.querySelectorAll("[data-filter-category]")) {
         link.addEventListener("click", () => {
           categoryElement.value = link.dataset.filterCategory;
@@ -131,7 +246,9 @@
         });
       }
 
+      hydrateRailsScenario();
       render();
+      renderRailsDemo();
 
       function render() {
         const query = searchElement.value.trim().toLowerCase();
@@ -201,6 +318,142 @@
         `;
 
         return article;
+      }
+
+      function hydrateRailsScenario() {
+        const scenario = railsScenarios[railsScenarioElement.value];
+        railsNotionalElement.value = scenario.orderNotional;
+        railsLossElement.value = scenario.dailyLoss;
+        railsExposureElement.value = scenario.exposureBps;
+        renderRailsDemo();
+      }
+
+      function renderRailsDemo() {
+        const scenario = railsScenarios[railsScenarioElement.value];
+        const intent = {
+          id: `site:${railsScenarioElement.value}`,
+          agent: {
+            id: "agent:market-maker-demo",
+            enabled: railsScenarioElement.value !== "issuer",
+            dailyLoss: Number(railsLossElement.value)
+          },
+          asset: {
+            type: "tokenized-stock",
+            tags: ["rwa", "tokenized-stock"]
+          },
+          order: {
+            notional: Number(railsNotionalElement.value)
+          },
+          portfolio: {
+            postTradeExposureBps: Number(railsExposureElement.value)
+          },
+          eligibility: {
+            credentialCommitment: railsScenarioElement.value === "breach" ? "" : "0xcredential"
+          },
+          execution: {
+            mode: "hook",
+            swapIntentHash: railsScenarioElement.value === "breach" ? "" : "0xintent"
+          },
+          distribution: {
+            claim: scenario.distributionClaim,
+            snapshotRoot: scenario.distributionClaim ? "0xsnapshot" : ""
+          },
+          issuer: {
+            reportBacking: scenario.issuerBacking,
+            backingCommitment: scenario.issuerBacking ? "0xbacking" : ""
+          }
+        };
+        const policy = {
+          ...railsPolicy,
+          issuer: { requiresBackingProof: scenario.issuerBacking }
+        };
+        const plan = recommendProofRails(policy, intent);
+        railsCountElement.textContent = `${plan.requiredTemplates.length} templates`;
+        railsResultsElement.replaceChildren(...plan.requiredTemplates.map((id) => renderRail(id, plan)));
+      }
+
+      function renderRail(id, plan) {
+        const template = catalog.find((candidate) => candidate.id === id);
+        const checks = plan.checks.filter((check) => check.template === id);
+        const article = document.createElement("article");
+        article.className = "rail-card";
+        article.innerHTML = `
+          <div>
+            <p>${escapeHtml(template.category)}</p>
+            <h4>${escapeHtml(template.title)}</h4>
+          </div>
+          <ul>
+            ${checks.map((check) => `<li><strong class="status-${escapeHtml(check.status)}">${escapeHtml(check.status)}</strong> ${escapeHtml(check.label)}</li>`).join("")}
+          </ul>
+          <a href="${repoBaseUrl}/templates/catalog.json#L${template.github.catalogLine}" target="_blank" rel="noreferrer">Open template</a>
+        `;
+        return article;
+      }
+
+      function recommendProofRails(policy, intent) {
+        const checks = [];
+        const templates = new Set();
+        const agentEnabled = Boolean(policy.agent?.id || intent.agent?.id || intent.agent?.enabled);
+        const rwaAsset = intent.asset?.type === "tokenized-stock" || intent.asset?.type === "rwa";
+        const hookExecution = policy.execution?.mode === "hook" || intent.execution?.mode === "hook";
+
+        if (agentEnabled) {
+          templates.add(proofRailsTemplateMap.agentRisk);
+          checks.push(limitCheck("Order notional limit", proofRailsTemplateMap.agentRisk, intent.order?.notional, policy.limits?.maxOrderNotional, "usd-cents"));
+          checks.push(limitCheck("Agent daily loss limit", proofRailsTemplateMap.agentRisk, intent.agent?.dailyLoss, policy.limits?.maxDailyLoss, "usd-cents"));
+        }
+
+        if (rwaAsset && policy.eligibility?.required !== false) {
+          templates.add(proofRailsTemplateMap.tradingEligibility);
+          checks.push({
+            template: proofRailsTemplateMap.tradingEligibility,
+            label: "Trading eligibility credential",
+            status: intent.eligibility?.credentialCommitment ? "ready" : "needs-witness"
+          });
+        }
+
+        if (hookExecution) {
+          templates.add(proofRailsTemplateMap.executionHook);
+          checks.push({
+            template: proofRailsTemplateMap.executionHook,
+            label: "Hook or router proof gate",
+            status: intent.execution?.swapIntentHash ? "ready" : "needs-intent"
+          });
+        }
+
+        templates.add(proofRailsTemplateMap.portfolioExposure);
+        checks.push(limitCheck("Post-trade portfolio exposure", proofRailsTemplateMap.portfolioExposure, intent.portfolio?.postTradeExposureBps, policy.limits?.maxPortfolioExposureBps, "bps"));
+
+        if (intent.distribution?.claim) {
+          templates.add(proofRailsTemplateMap.dividendEntitlement);
+          checks.push({
+            template: proofRailsTemplateMap.dividendEntitlement,
+            label: "Distribution entitlement",
+            status: intent.distribution?.snapshotRoot ? "ready" : "needs-snapshot"
+          });
+        }
+
+        if (policy.issuer?.requiresBackingProof || intent.issuer?.reportBacking) {
+          templates.add(proofRailsTemplateMap.issuerBacking);
+          checks.push({
+            template: proofRailsTemplateMap.issuerBacking,
+            label: "Issuer backing proof",
+            status: intent.issuer?.backingCommitment ? "ready" : "needs-attestation"
+          });
+        }
+
+        return { requiredTemplates: [...templates], checks };
+      }
+
+      function limitCheck(label, template, actual, limit, unit) {
+        if (!Number.isFinite(actual) || !Number.isFinite(limit)) {
+          return { label, template, status: "needs-witness" };
+        }
+        return {
+          label: `${label}: ${actual} / ${limit} ${unit}`,
+          template,
+          status: actual <= limit ? "pass" : "breach"
+        };
       }
 
       function escapeHtml(value) {

@@ -1,0 +1,30 @@
+{
+  "id": "intent:buy-tokenized-equity-demo",
+  "agent": {
+    "id": "agent:market-maker-demo",
+    "enabled": true,
+    "dailyLoss": 420000
+  },
+  "asset": {
+    "symbol": "xEQUITY",
+    "type": "tokenized-stock",
+    "tags": ["rwa", "tokenized-stock"]
+  },
+  "order": {
+    "side": "buy",
+    "notional": 1250000,
+    "recipient": "0x0000000000000000000000000000000000000000"
+  },
+  "portfolio": {
+    "postTradeExposureBps": 1450
+  },
+  "eligibility": {
+    "credentialCommitment": "0xcredentialcommitment"
+  },
+  "execution": {
+    "mode": "hook",
+    "chainId": 1,
+    "venue": "uniswap-v4-style-pool",
+    "swapIntentHash": "0xswapintenthash"
+  }
+}

@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+export { PROOF_RAILS_TEMPLATE_MAP, recommendProofRails } from "./proof-rails.js";
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const catalogPath = join(packageRoot, "templates", "catalog.json");

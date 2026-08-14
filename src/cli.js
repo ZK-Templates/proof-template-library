@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { getCategories, getTags, getTemplate, listTemplates, scaffoldTemplate } from "./index.js";
+import { readFileSync } from "node:fs";
+import { getCategories, getTags, getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "./index.js";
 
 const args = process.argv.slice(2);
 const command = args[0] ?? "help";
@@ -54,6 +55,21 @@ try {
     console.log(`Scaffolded ${result.template.id} (${result.system}) in ${result.outDir}`);
     for (const file of result.written) {
       console.log(`- ${file}`);
+    }
+    process.exit(0);
+  }
+
+  if (command === "rails") {
+    const options = parseOptions(args.slice(1));
+    if (!options.policy || !options.intent) {
+      throw new Error("Usage: proof-templates rails --policy path --intent path [--json]");
+    }
+
+    const plan = recommendProofRails(readJson(options.policy), readJson(options.intent));
+    if (options.json) {
+      console.log(JSON.stringify(plan, null, 2));
+    } else {
+      printRailsPlan(plan);
     }
     process.exit(0);
   }
@@ -123,6 +139,25 @@ function printTemplate(template) {
   }
 }
 
+function printRailsPlan(plan) {
+  console.log(`Proof Rails plan for ${plan.intentId}`);
+  console.log(plan.summary);
+  console.log("");
+  console.log("Required templates:");
+  for (const template of plan.requiredTemplates) {
+    console.log(`- ${template}`);
+  }
+  console.log("");
+  console.log("Checks:");
+  for (const check of plan.checks) {
+    console.log(`- [${check.status}] ${check.label}: ${check.detail}`);
+  }
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
 function printHelp() {
   console.log(`Proof Template Library
 
@@ -130,6 +165,7 @@ Usage:
   proof-templates list [--tag tag] [--category category] [--system noir|circom] [--maturity starter|experimental|reviewed|production-pattern|audited]
   proof-templates show <id> [--json]
   proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
+  proof-templates rails --policy path --intent path [--json]
   proof-templates tags
   proof-templates categories
 `);

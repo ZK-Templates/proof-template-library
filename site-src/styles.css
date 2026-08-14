@@ -177,6 +177,89 @@ code {
   line-height: 1.4;
 }
 
+.rails-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(260px, 0.7fr) minmax(320px, 1fr);
+  gap: 18px;
+  align-items: start;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 22px;
+}
+
+.rails-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.rails-copy p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.rails-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.rails-output {
+  display: grid;
+  gap: 12px;
+}
+
+.rails-results {
+  display: grid;
+  gap: 10px;
+}
+
+.rail-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 14px;
+}
+
+.rail-card p {
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rail-card h4 {
+  font-size: 1rem;
+}
+
+.rail-card ul {
+  margin: 0;
+}
+
+.rail-card a {
+  color: var(--accent-strong);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.status-pass,
+.status-ready {
+  color: #0f766e;
+}
+
+.status-breach {
+  color: #b42318;
+}
+
+.status-needs-witness,
+.status-needs-intent,
+.status-needs-snapshot,
+.status-needs-attestation {
+  color: #8a5a00;
+}
+
 .filters {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(150px, 210px));
@@ -363,6 +446,7 @@ ul {
   .topbar,
   .intro,
   .release-panel,
+  .rails-demo,
   .filters {
     grid-template-columns: 1fr;
   }
