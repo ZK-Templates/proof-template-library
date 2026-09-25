@@ -1,7 +1,7 @@
 {
   "name": "proof-template-library",
-  "version": "0.1.0",
-  "description": "A starter library of reusable zero-knowledge proof templates and scaffolds.",
+  "version": "0.3.0",
+  "description": "Reusable ZK templates and Proof Passport infrastructure for autonomous agents.",
   "type": "module",
   "bin": {
     "proof-templates": "./src/cli.js"

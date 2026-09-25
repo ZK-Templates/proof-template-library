@@ -1,0 +1,14 @@
+[
+  {
+    "templateId": "ai-agent-risk-guard",
+    "verifierId": "expandzk:ai-agent-risk-guard:v1",
+    "proofSystem": "noir",
+    "publicInputs": {
+      "passportId": "replace-after-passport-creation",
+      "policyCommitment": "replace-with-policy-commitment",
+      "intentHash": "replace-with-intent-hash"
+    },
+    "proof": "replace-with-generated-proof-bytes",
+    "nullifier": "replace-with-agent-action-nullifier"
+  }
+]

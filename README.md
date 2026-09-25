@@ -1,6 +1,6 @@
-# Proof Template Library
+# ExpandZK Proof Template Library
 
-A starter library of reusable zero-knowledge proof templates. It gives a project team a shared catalog of proof patterns, their public/private inputs, security notes, and starter circuit files.
+A reusable zero-knowledge toolkit for proof patterns, autonomous-agent policies, and portable Proof Passports. It gives teams a shared catalog of circuits, public/private input specifications, security notes, integration adapters, and starter files.
 
 The catalog focuses on templates that show up often in privacy-preserving apps, including AI workflows and a new Tokenized Markets Pack for RWA, tokenized-stock, compliance-hook, and AI trading-agent use cases:
 
@@ -30,6 +30,38 @@ The catalog focuses on templates that show up often in privacy-preserving apps, 
 - Tokenized Asset Backing
 
 Templates include maturity labels such as `starter` and `experimental`. They are not audited production circuits. Treat them as implementation scaffolds and review checklists.
+
+## V3: Proof Network
+
+ExpandZK V3 turns the catalog and Proof Rails Pack into a protocol foundation for autonomous agents. A proposed agent action can now be packaged into a standardized Proof Passport that binds:
+
+- the agent and action intent
+- a versioned policy commitment
+- a short execution window
+- the proof rails required before execution
+- verifier routing, public inputs, proof attachments, and nullifiers
+
+The release includes a JavaScript SDK, CLI workflow, JSON Schema, local policy registry, EVM policy registry, and verifier router reference contract. It does not claim to provide a hosted proving network or audited verifiers.
+
+Create and inspect a Proof Passport:
+
+```sh
+node src/cli.js passport create \
+  --policy integrations/proof-rails/agent-policy.example.json \
+  --intent integrations/proof-rails/trade-intent.example.json \
+  --out /tmp/proof-passport.json
+
+node src/cli.js registry \
+  --policy integrations/proof-rails/agent-policy.example.json \
+  --network ethereum-mainnet \
+  --out /tmp/policy-registry.json
+
+node src/cli.js passport inspect \
+  --passport /tmp/proof-passport.json \
+  --registry /tmp/policy-registry.json
+```
+
+See [docs/proof-network-v3.md](docs/proof-network-v3.md) for the protocol objects, execution flow, and security boundary.
 
 ## Tokenized Markets Pack
 
@@ -95,6 +127,9 @@ proof-templates list [--tag tag] [--category category] [--system noir|circom] [-
 proof-templates show <id> [--json]
 proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
 proof-templates rails --policy path --intent path [--json]
+proof-templates passport create --policy path --intent path [--proofs path] [--ttl seconds] [--out path]
+proof-templates passport inspect --passport path [--registry path] [--json]
+proof-templates registry --policy path [--network name] [--out path]
 proof-templates tags
 proof-templates categories
 ```
@@ -104,7 +139,15 @@ During local development, use `node src/cli.js ...` instead of the installed `pr
 ## JavaScript API
 
 ```js
-import { getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "./src/index.js";
+import {
+  createPolicyRegistry,
+  createProofPassport,
+  getTemplate,
+  inspectProofPassport,
+  listTemplates,
+  recommendProofRails,
+  scaffoldTemplate
+} from "./src/index.js";
 
 const identityTemplates = listTemplates({ category: "identity" });
 const ageGate = getTemplate("age-gate");
@@ -115,6 +158,9 @@ scaffoldTemplate("age-gate", {
 });
 
 const railPlan = recommendProofRails(policyManifest, tradeIntent);
+const passport = createProofPassport(policyManifest, tradeIntent);
+const registry = createPolicyRegistry([policyManifest]);
+const inspection = inspectProofPassport(passport, { registry });
 ```
 
 ## Template Shape

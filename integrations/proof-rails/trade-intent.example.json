@@ -13,18 +13,19 @@
   "order": {
     "side": "buy",
     "notional": 1250000,
-    "recipient": "0x0000000000000000000000000000000000000000"
+    "recipient": "0x2222222222222222222222222222222222222222"
   },
   "portfolio": {
     "postTradeExposureBps": 1450
   },
   "eligibility": {
-    "credentialCommitment": "0xcredentialcommitment"
+    "credentialCommitment": "0xcb7bd6642ae654beea7f50c435acb7078e1eeaf5cfcebb4fb41bb6b719d44511"
   },
   "execution": {
     "mode": "hook",
     "chainId": 1,
     "venue": "uniswap-v4-style-pool",
-    "swapIntentHash": "0xswapintenthash"
+    "target": "0x3333333333333333333333333333333333333333",
+    "swapIntentHash": "0x81322304f1f32cd15ec821d2692fe6d677f2e9aa9a109d68a9d30811bfcb72c4"
   }
 }

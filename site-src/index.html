@@ -3,14 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Proof Template Library</title>
+    <title>ExpandZK | Proof Network and Template Library</title>
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Zero-knowledge starter kit</p>
-        <h1>Proof Template Library</h1>
+      <div class="brand-lockup">
+        <img src="./expandzk-logo.jpg" alt="" width="56" height="56">
+        <div>
+          <p class="eyebrow">Proof infrastructure for autonomous agents</p>
+          <h1>ExpandZK</h1>
+          <p class="brand-subtitle">Proof Template Library</p>
+        </div>
       </div>
       <a class="github-link" href="https://github.com/ZK-Templates/proof-template-library">GitHub</a>
     </header>
@@ -18,18 +22,61 @@
     <main>
       <section class="intro">
         <div>
-          <div class="release-pill">New: Tokenized Markets Pack</div>
-          <h2>Reusable proof patterns for ZK apps</h2>
+          <div class="release-pill">V3 Preview: Proof Network</div>
+          <h2>The proof layer for autonomous agents</h2>
           <p>
-            Browse starter proof templates with public inputs, private witnesses,
-            implementation constraints, security review notes, and commercial
-            patterns for AI agents, RWAs, and tokenized-stock workflows.
+            Build portable Proof Passports that bind agent actions to policies,
+            proof rails, verifier routes, and replay protection before execution.
           </p>
         </div>
         <div class="commands" aria-label="CLI commands">
-          <code>node src/cli.js list</code>
-          <code>node src/cli.js list --category rwa</code>
-          <code>node src/cli.js scaffold private-rwa-trading-eligibility --system noir</code>
+          <code>node src/cli.js passport create --policy policy.json --intent intent.json</code>
+          <code>node src/cli.js passport inspect --passport passport.json --registry registry.json</code>
+        </div>
+      </section>
+
+      <section class="network-panel" aria-label="ExpandZK Proof Network">
+        <div class="network-copy">
+          <p class="eyebrow">ExpandZK V3</p>
+          <h2>One passport. Multiple proofs. One execution decision.</h2>
+          <p>
+            Proof Rails selects the checks. The Passport binds them to an agent,
+            intent, policy, chain, target, and validity window. The router dispatches
+            every rail to its registered verifier before the action continues.
+          </p>
+          <ol class="protocol-flow" aria-label="Proof Passport lifecycle">
+            <li><span>01</span><strong>Propose</strong><small>Agent action intent</small></li>
+            <li><span>02</span><strong>Prove</strong><small>Attach required rails</small></li>
+            <li><span>03</span><strong>Route</strong><small>Resolve verifiers</small></li>
+            <li><span>04</span><strong>Execute</strong><small>Accept or block</small></li>
+          </ol>
+          <div class="network-links">
+            <a href="https://github.com/ZK-Templates/proof-template-library/blob/main/docs/proof-network-v3.md" target="_blank" rel="noreferrer">Read V3 protocol</a>
+            <a href="https://github.com/ZK-Templates/proof-template-library/blob/main/schemas/proof-passport.schema.json" target="_blank" rel="noreferrer">Passport schema</a>
+            <a href="https://github.com/ZK-Templates/proof-template-library/blob/main/integrations/evm/ProofPassportRouter.sol" target="_blank" rel="noreferrer">EVM router</a>
+          </div>
+        </div>
+
+        <div class="passport-console" aria-label="Proof Passport preview">
+          <div class="passport-console-heading">
+            <div>
+              <p>Proof Passport</p>
+              <strong id="passport-id">0x7a91...e42c</strong>
+            </div>
+            <span id="passport-status">Awaiting proofs</span>
+          </div>
+          <dl class="passport-facts">
+            <div><dt>Agent</dt><dd>market-maker-demo</dd></div>
+            <div><dt>Policy</dt><dd id="passport-policy">rwa-agent-policy-v1</dd></div>
+            <div><dt>Intent</dt><dd id="passport-intent">site:standard</dd></div>
+            <div><dt>Window</dt><dd>300 seconds</dd></div>
+          </dl>
+          <div class="passport-rails-heading">
+            <span>Required rails</span>
+            <strong id="passport-rail-count">4</strong>
+          </div>
+          <div class="passport-rail-list" id="passport-rail-list"></div>
+          <p class="passport-footnote">Envelope preview only. Cryptographic verification runs through registered proof-system verifiers.</p>
         </div>
       </section>
 
@@ -153,6 +200,12 @@
       const railsExposureElement = document.querySelector("#rails-exposure");
       const railsCountElement = document.querySelector("#rails-count");
       const railsResultsElement = document.querySelector("#rails-results");
+      const passportIdElement = document.querySelector("#passport-id");
+      const passportStatusElement = document.querySelector("#passport-status");
+      const passportPolicyElement = document.querySelector("#passport-policy");
+      const passportIntentElement = document.querySelector("#passport-intent");
+      const passportRailCountElement = document.querySelector("#passport-rail-count");
+      const passportRailListElement = document.querySelector("#passport-rail-list");
 
       const proofRailsTemplateMap = {
         agentRisk: "ai-agent-risk-guard",
@@ -370,6 +423,36 @@
         const plan = recommendProofRails(policy, intent);
         railsCountElement.textContent = `${plan.requiredTemplates.length} templates`;
         railsResultsElement.replaceChildren(...plan.requiredTemplates.map((id) => renderRail(id, plan)));
+        renderPassportPreview(plan, intent);
+      }
+
+      function renderPassportPreview(plan, intent) {
+        const blocked = plan.checks.some((check) => check.status === "breach");
+        const passportSeed = `${intent.id}:${intent.order?.notional}:${intent.agent?.dailyLoss}:${intent.portfolio?.postTradeExposureBps}`;
+        passportIdElement.textContent = compactDemoId(passportSeed);
+        passportStatusElement.textContent = blocked ? "Policy blocked" : "Awaiting proofs";
+        passportStatusElement.className = blocked ? "passport-blocked" : "passport-pending";
+        passportPolicyElement.textContent = railsPolicy.id;
+        passportIntentElement.textContent = intent.id;
+        passportRailCountElement.textContent = plan.requiredTemplates.length;
+        passportRailListElement.replaceChildren(...plan.requiredTemplates.map((id) => {
+          const template = catalog.find((candidate) => candidate.id === id);
+          const row = document.createElement("div");
+          const failed = plan.checks.some((check) => check.template === id && check.status === "breach");
+          row.innerHTML = `<span>${escapeHtml(template.title)}</span><strong class="${failed ? "rail-blocked" : "rail-requested"}">${failed ? "blocked" : "requested"}</strong>`;
+          return row;
+        }));
+      }
+
+      function compactDemoId(value) {
+        let hash = 2166136261;
+        for (const character of value) {
+          hash ^= character.charCodeAt(0);
+          hash = Math.imul(hash, 16777619);
+        }
+        const left = (hash >>> 0).toString(16).padStart(8, "0");
+        const right = ((hash ^ 0x9e3779b9) >>> 0).toString(16).padStart(8, "0");
+        return `0x${left}...${right}`;
       }
 
       function renderRail(id, plan) {

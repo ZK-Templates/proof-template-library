@@ -1,6 +1,16 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
-import { getCategories, getTags, getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "./index.js";
+import { readFileSync, writeFileSync } from "node:fs";
+import {
+  createPolicyRegistry,
+  createProofPassport,
+  getCategories,
+  getTags,
+  getTemplate,
+  inspectProofPassport,
+  listTemplates,
+  recommendProofRails,
+  scaffoldTemplate
+} from "./index.js";
 
 const args = process.argv.slice(2);
 const command = args[0] ?? "help";
@@ -71,6 +81,53 @@ try {
     } else {
       printRailsPlan(plan);
     }
+    process.exit(0);
+  }
+
+  if (command === "passport") {
+    const action = args[1];
+    const options = parseOptions(args.slice(2));
+
+    if (action === "create") {
+      if (!options.policy || !options.intent) {
+        throw new Error("Usage: proof-templates passport create --policy path --intent path [--proofs path] [--ttl seconds] [--out path]");
+      }
+      const passport = createProofPassport(readJson(options.policy), readJson(options.intent), {
+        proofs: options.proofs ? readJson(options.proofs) : [],
+        ttlSeconds: options.ttl
+      });
+      writeOrPrintJson(passport, options.out);
+      process.exit(0);
+    }
+
+    if (action === "inspect") {
+      if (!options.passport) {
+        throw new Error("Usage: proof-templates passport inspect --passport path [--registry path] [--json]");
+      }
+      const passport = readJson(options.passport);
+      const inspection = inspectProofPassport(passport, {
+        registry: options.registry ? readJson(options.registry) : undefined
+      });
+      if (options.json) {
+        console.log(JSON.stringify(inspection, null, 2));
+      } else {
+        printPassportInspection(passport, inspection);
+      }
+      process.exit(inspection.structurallyValid ? 0 : 1);
+    }
+
+    throw new Error("Usage: proof-templates passport <create|inspect> [options]");
+  }
+
+  if (command === "registry") {
+    const options = parseOptions(args.slice(1));
+    if (!options.policy) {
+      throw new Error("Usage: proof-templates registry --policy path [--network name] [--out path]");
+    }
+    const registry = createPolicyRegistry([readJson(options.policy)], {
+      network: options.network
+    });
+    writeOrPrintJson(registry, options.out);
     process.exit(0);
   }
 
@@ -154,8 +211,42 @@ function printRailsPlan(plan) {
   }
 }
 
+function printPassportInspection(passport, inspection) {
+  console.log(`Proof Passport ${passport.passportId ?? "unknown"}`);
+  console.log(`Status: ${passport.status ?? "unknown"}`);
+  console.log(`Policy: ${passport.policy?.id ?? "unknown"}`);
+  console.log(`Proofs: ${inspection.attachedProofs}/${inspection.totalProofs} attached`);
+  console.log(`Structurally valid: ${inspection.structurallyValid ? "yes" : "no"}`);
+  console.log(`Registry match: ${inspection.registryMatch === null ? "not checked" : inspection.registryMatch ? "yes" : "no"}`);
+  console.log(`Ready for router: ${inspection.readyForRouter ? "yes" : "no"}`);
+  console.log("Cryptographic verification: not run");
+
+  if (inspection.errors.length > 0) {
+    console.log("\nErrors:");
+    for (const error of inspection.errors) {
+      console.log(`- ${error}`);
+    }
+  }
+  if (inspection.warnings.length > 0) {
+    console.log("\nWarnings:");
+    for (const warning of inspection.warnings) {
+      console.log(`- ${warning}`);
+    }
+  }
+}
+
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function writeOrPrintJson(value, outPath) {
+  const contents = `${JSON.stringify(value, null, 2)}\n`;
+  if (outPath) {
+    writeFileSync(outPath, contents);
+    console.log(`Wrote ${outPath}`);
+    return;
+  }
+  process.stdout.write(contents);
 }
 
 function printHelp() {
@@ -166,6 +257,9 @@ Usage:
   proof-templates show <id> [--json]
   proof-templates scaffold <id> [--system noir|circom] [--out path] [--force]
   proof-templates rails --policy path --intent path [--json]
+  proof-templates passport create --policy path --intent path [--proofs path] [--ttl seconds] [--out path]
+  proof-templates passport inspect --passport path [--registry path] [--json]
+  proof-templates registry --policy path [--network name] [--out path]
   proof-templates tags
   proof-templates categories
 `);

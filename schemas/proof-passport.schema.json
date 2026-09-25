@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://expandzk.com/schemas/proof-passport.schema.json",
+  "title": "ExpandZK Proof Passport",
+  "type": "object",
+  "required": ["version", "passportId", "status", "issuedAt", "expiresAt", "subject", "action", "policy", "rails"],
+  "properties": {
+    "version": {
+      "const": "expandzk-proof-passport/1.0"
+    },
+    "passportId": {
+      "$ref": "#/$defs/bytes32"
+    },
+    "status": {
+      "enum": ["proofs-required", "ready-for-verification", "policy-breach"]
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "type": "object",
+      "required": ["agentId", "controller"],
+      "properties": {
+        "agentId": { "type": "string", "minLength": 1 },
+        "controller": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "action": {
+      "type": "object",
+      "required": ["intentId", "type", "chainId", "target", "intentHash"],
+      "properties": {
+        "intentId": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["trade", "distribution-claim", "issuer-report", "agent-action"] },
+        "chainId": { "type": ["integer", "null"], "minimum": 1 },
+        "target": { "type": ["string", "null"] },
+        "intentHash": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "required": ["id", "commitment"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "commitment": { "$ref": "#/$defs/bytes32" }
+      },
+      "additionalProperties": false
+    },
+    "rails": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/rail"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "bytes32": {
+      "type": "string",
+      "pattern": "^0x[a-fA-F0-9]{64}$"
+    },
+    "rail": {
+      "type": "object",
+      "required": ["id", "templateId", "verifierId", "checks", "status", "proofSystem", "publicInputs", "publicInputsHash", "proof", "nullifier"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^rail:[a-z0-9-]+$" },
+        "templateId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "verifierId": { "type": "string", "minLength": 1 },
+        "checks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "status": { "enum": ["requested", "attached"] },
+        "proofSystem": { "type": ["string", "null"] },
+        "publicInputs": { "type": ["object", "array"] },
+        "publicInputsHash": { "$ref": "#/$defs/bytes32" },
+        "proof": { "type": ["string", "null"] },
+        "nullifier": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

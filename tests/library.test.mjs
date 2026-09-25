@@ -3,7 +3,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getCategories, getTags, getTemplate, listTemplates, recommendProofRails, scaffoldTemplate } from "../src/index.js";
+import {
+  PROOF_PASSPORT_VERSION,
+  createPolicyRegistry,
+  createProofPassport,
+  getCategories,
+  getTags,
+  getTemplate,
+  inspectProofPassport,
+  listTemplates,
+  recommendProofRails,
+  scaffoldTemplate
+} from "../src/index.js";
 
 test("catalog exposes starter proof templates", () => {
   const templates = listTemplates();
@@ -123,4 +134,73 @@ test("proof rails recommends templates from policy and intent manifests", () => 
     "private-portfolio-exposure"
   ]);
   assert.ok(plan.checks.every((check) => ["pass", "ready"].includes(check.status)));
+});
+
+test("proof passport binds an agent action to policy and required rails", () => {
+  const policy = JSON.parse(readFileSync("integrations/proof-rails/agent-policy.example.json", "utf8"));
+  const intent = JSON.parse(readFileSync("integrations/proof-rails/trade-intent.example.json", "utf8"));
+  const options = { issuedAt: "2030-01-01T00:00:00.000Z", ttlSeconds: 300 };
+  const passport = createProofPassport(policy, intent, options);
+  const repeated = createProofPassport(policy, intent, options);
+
+  assert.equal(passport.version, PROOF_PASSPORT_VERSION);
+  assert.equal(passport.status, "proofs-required");
+  assert.equal(passport.passportId, repeated.passportId);
+  assert.equal(passport.subject.agentId, "agent:market-maker-demo");
+  assert.equal(passport.action.type, "trade");
+  assert.deepEqual(passport.rails.map((rail) => rail.templateId), [
+    "ai-agent-risk-guard",
+    "private-rwa-trading-eligibility",
+    "rwa-compliance-hook",
+    "private-portfolio-exposure"
+  ]);
+  assert.ok(passport.rails.every((rail) => rail.status === "requested"));
+  assert.equal(JSON.stringify(passport).includes("dailyLoss"), false);
+  assert.equal(JSON.stringify(passport).includes("postTradeExposureBps"), false);
+});
+
+test("proof passport inspector checks registry binding and tamper resistance", () => {
+  const policy = JSON.parse(readFileSync("integrations/proof-rails/agent-policy.example.json", "utf8"));
+  const intent = JSON.parse(readFileSync("integrations/proof-rails/trade-intent.example.json", "utf8"));
+  const passport = createProofPassport(policy, intent, {
+    issuedAt: "2030-01-01T00:00:00.000Z",
+    ttlSeconds: 300
+  });
+  const registry = createPolicyRegistry([policy], { network: "testnet" });
+  const inspection = inspectProofPassport(passport, {
+    registry,
+    now: "2030-01-01T00:01:00.000Z"
+  });
+
+  assert.equal(inspection.structurallyValid, true);
+  assert.equal(inspection.registryMatch, true);
+  assert.equal(inspection.readyForRouter, false);
+  assert.equal(inspection.attachedProofs, 0);
+
+  const tampered = structuredClone(passport);
+  tampered.action.intentHash = "0xtampered";
+  const tamperedInspection = inspectProofPassport(tampered, {
+    registry,
+    now: "2030-01-01T00:01:00.000Z"
+  });
+  assert.equal(tamperedInspection.structurallyValid, false);
+  assert.ok(tamperedInspection.errors.some((error) => error.includes("canonical payload")));
+});
+
+test("proof passport blocks policy-breaching intents", () => {
+  const policy = JSON.parse(readFileSync("integrations/proof-rails/agent-policy.example.json", "utf8"));
+  const intent = JSON.parse(readFileSync("integrations/proof-rails/trade-intent.example.json", "utf8"));
+  intent.order.notional = policy.limits.maxOrderNotional + 1;
+
+  const passport = createProofPassport(policy, intent, {
+    issuedAt: "2030-01-01T00:00:00.000Z",
+    ttlSeconds: 300
+  });
+  const inspection = inspectProofPassport(passport, {
+    now: "2030-01-01T00:01:00.000Z"
+  });
+
+  assert.equal(passport.status, "policy-breach");
+  assert.equal(inspection.readyForRouter, false);
+  assert.ok(inspection.errors.some((error) => error.includes("policy breach")));
 });

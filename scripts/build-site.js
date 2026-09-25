@@ -17,6 +17,7 @@ mkdirSync(siteDir, { recursive: true });
 writeFileSync(join(siteDir, "catalog.json"), `${JSON.stringify(catalog, null, 2)}\n`);
 copyFileSync(join(root, "site-src", "index.html"), join(siteDir, "index.html"));
 copyFileSync(join(root, "site-src", "styles.css"), join(siteDir, "styles.css"));
+copyFileSync(join(root, "site-src", "expandzk-logo.jpg"), join(siteDir, "expandzk-logo.jpg"));
 
 console.log(`Built site with ${catalog.length} proof templates.`);
 

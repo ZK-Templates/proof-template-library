@@ -1,17 +1,19 @@
 {
   "id": "rwa-agent-policy-v1",
+  "name": "Tokenized Market Agent Policy",
+  "version": "1.0.0",
   "scope": ["rwa", "tokenized-stock", "ai-agent"],
   "units": {
     "notional": "usd-cents"
   },
   "agent": {
     "id": "agent:market-maker-demo",
-    "controller": "0x0000000000000000000000000000000000000000"
+    "controller": "0x1111111111111111111111111111111111111111"
   },
   "eligibility": {
     "required": true,
-    "credentialRoot": "0xcredentialroot",
-    "policyCommitment": "0xeligibilitypolicy"
+    "credentialRoot": "0x9e14c3bc65fa65e5ee0b20d181b0b023b56e6806f62cc318dd23c2f7155f0ea1",
+    "policyCommitment": "0xa5de9f63400a139d6ab7c09680fc28cb39c8c44c76d3db5599fba8edb209af9d"
   },
   "execution": {
     "mode": "hook",
