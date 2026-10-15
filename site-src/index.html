@@ -22,22 +22,36 @@
     <main>
       <section class="intro">
         <div>
-          <div class="release-pill">V3 Preview: Proof Network</div>
-          <h2>The proof layer for autonomous agents</h2>
+          <div class="release-pill">Proof Network Testnet</div>
+          <h2>Give every AI agent a Proof Passport</h2>
           <p>
-            Build portable Proof Passports that bind agent actions to policies,
-            proof rails, verifier routes, and replay protection before execution.
+            Turn private policy compliance into a portable proof before capital moves.
+            Prove the action, verify the limits, then let the agent execute.
           </p>
         </div>
         <div class="commands" aria-label="CLI commands">
-          <code>node src/cli.js passport create --policy policy.json --intent intent.json</code>
-          <code>node src/cli.js passport inspect --passport passport.json --registry registry.json</code>
+          <code>npm run proof:testnet</code>
+          <code>npm run build:verifier</code>
         </div>
+      </section>
+
+      <section class="testnet-launch" aria-label="Proof Network Testnet launch">
+        <div>
+          <p class="eyebrow">Now running</p>
+          <h2>Trust the proof, not the trading bot</h2>
+          <p>Generate a Proof Passport showing an AI agent stayed inside its risk policy without exposing its strategy, positions, or private trade data.</p>
+        </div>
+        <dl>
+          <div><dt>Circuit</dt><dd>Noir</dd></div>
+          <div><dt>Proof</dt><dd>UltraHonk</dd></div>
+          <div><dt>Target</dt><dd>EVM</dd></div>
+        </dl>
+        <a href="./testnet.html">Create a proof</a>
       </section>
 
       <section class="network-panel" aria-label="ExpandZK Proof Network">
         <div class="network-copy">
-          <p class="eyebrow">ExpandZK V3</p>
+          <p class="eyebrow">Proof Passport protocol</p>
           <h2>One passport. Multiple proofs. One execution decision.</h2>
           <p>
             Proof Rails selects the checks. The Passport binds them to an agent,

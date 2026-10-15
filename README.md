@@ -31,6 +31,20 @@ The catalog focuses on templates that show up often in privacy-preserving apps, 
 
 Templates include maturity labels such as `starter` and `experimental`. They are not audited production circuits. Treat them as implementation scaffolds and review checklists.
 
+## Proof Network Testnet
+
+The Proof Network Testnet adds a real end-to-end proving path for the AI Agent Risk Guard. Builders can now compile the Noir circuit, generate an EVM-targeted UltraHonk proof, verify it locally, and attach the verified result to a Proof Passport.
+
+```sh
+npm install
+npm run proof:testnet
+npm run build:verifier
+```
+
+The GitHub Pages site includes an interactive browser prover with valid and policy-violating trade scenarios. Private witness values stay in the browser tab. The release also includes the compiled circuit artifact, JavaScript prover SDK, generated Solidity verifier, and positive and negative proof tests.
+
+This is an unaudited developer testnet, not a hosted proving service or production verifier deployment. See [docs/proof-network-testnet.md](docs/proof-network-testnet.md) for the proof statement, browser flow, EVM boundary, and security notes.
+
 ## V3: Proof Network
 
 ExpandZK V3 turns the catalog and Proof Rails Pack into a protocol foundation for autonomous agents. A proposed agent action can now be packaged into a standardized Proof Passport that binds:
@@ -112,6 +126,12 @@ Run tests:
 
 ```sh
 npm test
+```
+
+Run the Agent Risk Guard testnet flow:
+
+```sh
+npm run proof:testnet
 ```
 
 Build the static catalog site used by GitHub Pages:

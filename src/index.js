@@ -10,6 +10,14 @@ export {
   hashCanonical,
   inspectProofPassport
 } from "./proof-passport.js";
+export {
+  TESTNET_CIRCUIT_ID,
+  TESTNET_PROOF_SYSTEM,
+  attachRiskProofToPassport,
+  createActionCommitment,
+  normalizeRiskInput,
+  proveAgentRiskGuard
+} from "./testnet.js";
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const catalogPath = join(packageRoot, "templates", "catalog.json");

@@ -1,0 +1,7 @@
+[package]
+name = "expandzk_agent_risk_guard"
+type = "bin"
+authors = ["ExpandZK"]
+compiler_version = ">=1.0.0-rc.5"
+
+[dependencies]

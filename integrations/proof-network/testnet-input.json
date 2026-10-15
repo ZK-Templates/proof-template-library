@@ -1,0 +1,12 @@
+{
+  "agent_secret": "123456789",
+  "order_notional": "1250000",
+  "daily_loss": "420000",
+  "post_trade_exposure_bps": "1450",
+  "max_order_notional": "2500000",
+  "max_daily_loss": "1000000",
+  "max_exposure_bps": "1800",
+  "agent_id": "845239",
+  "policy_commitment": "991827",
+  "intent_hash": "771203"
+}

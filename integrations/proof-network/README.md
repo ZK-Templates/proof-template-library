@@ -1,6 +1,14 @@
 # ExpandZK Proof Network
 
-This directory contains the offchain side of the V3 Proof Network reference flow. A Proof Passport is a portable envelope that binds an agent, action intent, policy commitment, validity window, and required proof rails.
+This directory contains the offchain side of the Proof Network reference flow. A Proof Passport is a portable envelope that binds an agent, action intent, policy commitment, validity window, and required proof rails.
+
+The Proof Network Testnet now includes a real Agent Risk Guard proof attachment. Run it with:
+
+```sh
+npm run proof:testnet
+```
+
+The command compiles the circuit, generates and verifies an EVM-targeted UltraHonk proof, and writes a local Proof Passport result under `artifacts/`. The generated output is ignored because proof bytes are nondeterministic; the circuit artifact and testnet input are versioned.
 
 Create a passport from the example policy and trade intent:
 
@@ -28,6 +36,6 @@ node src/cli.js passport inspect \
   --registry integrations/proof-network/policy-registry.local.json
 ```
 
-The generated passport initially marks every rail as `requested`. A proving integration replaces those entries with actual proof bytes, public inputs, verifier ids, and optional nullifiers. The `proof-attachments.example.json` file shows the attachment shape but intentionally contains non-verifiable placeholders.
+The generated passport initially marks every rail as `requested`. A proving integration replaces those entries with actual proof bytes, public inputs, verifier ids, and optional nullifiers. The `proof-attachments.example.json` file shows the attachment shape but intentionally contains non-verifiable placeholders. The testnet runner demonstrates the same shape with an actual verified Agent Risk Guard proof.
 
-The JavaScript inspector checks envelope integrity, validity windows, policy-registry binding, and required rail coverage. It does not perform cryptographic verification. That job belongs to a proof-system verifier or the reference `ProofPassportRouter.sol` adapter.
+The JavaScript inspector checks envelope integrity, validity windows, policy-registry binding, and required rail coverage. Cryptographic verification is performed by the testnet prover SDK or by a proof-system verifier connected to the reference `ProofPassportRouter.sol` adapter.

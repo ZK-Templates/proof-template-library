@@ -4,3 +4,4 @@ coverage/
 site/
 .DS_Store
 *.log
+artifacts/testnet-proof-passport.json

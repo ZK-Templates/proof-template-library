@@ -7,7 +7,10 @@
     "proof-templates": "./src/cli.js"
   },
   "scripts": {
+    "build:circuit": "node scripts/compile-testnet-circuit.js",
+    "build:verifier": "npm run build:circuit && node scripts/generate-testnet-verifier.js",
     "build:site": "node scripts/build-site.js",
+    "proof:testnet": "npm run build:circuit && node scripts/run-testnet-proof.js",
     "test": "node --test tests/*.test.mjs",
     "list": "node src/cli.js list"
   },
@@ -22,5 +25,13 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@aztec/bb.js": "^5.2.1",
+    "@noir-lang/noir_js": "^1.0.0-rc.5",
+    "@noir-lang/noir_wasm": "^1.0.0-rc.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11"
   }
 }

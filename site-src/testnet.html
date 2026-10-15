@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ExpandZK | Proof Network Testnet</title>
+    <link rel="stylesheet" href="./testnet.css">
+  </head>
+  <body>
+    <header class="testnet-topbar">
+      <a class="brand" href="./">
+        <img src="./expandzk-logo.jpg" alt="" width="44" height="44">
+        <span><strong>ExpandZK</strong><small>Proof Network Testnet</small></span>
+      </a>
+      <a class="source-link" href="https://github.com/ZK-Templates/proof-template-library/tree/main/circuits/agent-risk-guard" target="_blank" rel="noreferrer">View circuit</a>
+    </header>
+
+    <main>
+      <section class="testnet-intro">
+        <div>
+          <p class="eyebrow">Live browser prover</p>
+          <h1>Prove an agent stayed inside its trading policy.</h1>
+          <p class="lede">Generate a real UltraHonk proof from a Noir circuit, verify it locally, and inspect the public commitment without exposing the private trade witness.</p>
+        </div>
+        <dl class="network-facts">
+          <div><dt>Circuit</dt><dd>Agent Risk Guard</dd></div>
+          <div><dt>Proof system</dt><dd>UltraHonk / EVM</dd></div>
+          <div><dt>Execution</dt><dd>Local browser</dd></div>
+        </dl>
+      </section>
+
+      <section class="prover-shell" aria-label="Agent risk proof generator">
+        <form id="proof-form" class="proof-form">
+          <div class="form-heading">
+            <div>
+              <p class="eyebrow">Private witness</p>
+              <h2>Trade state</h2>
+            </div>
+            <label class="scenario-control">
+              Scenario
+              <select id="scenario">
+                <option value="within-policy">Within policy</option>
+                <option value="over-order-limit">Over order limit</option>
+                <option value="over-loss-limit">Over loss limit</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="input-grid">
+            <label>Order notional <input id="order-notional" name="order_notional" inputmode="numeric" required></label>
+            <label>Daily loss <input id="daily-loss" name="daily_loss" inputmode="numeric" required></label>
+            <label>Post-trade exposure <span class="input-suffix"><input id="exposure" name="post_trade_exposure_bps" inputmode="numeric" required><small>bps</small></span></label>
+            <label>Agent secret <input id="agent-secret" name="agent_secret" type="password" autocomplete="off" required></label>
+          </div>
+
+          <div class="policy-strip">
+            <div><span>Max order</span><strong>2,500,000</strong></div>
+            <div><span>Max daily loss</span><strong>1,000,000</strong></div>
+            <div><span>Max exposure</span><strong>1,800 bps</strong></div>
+          </div>
+
+          <button id="prove-button" type="submit">Generate and verify proof</button>
+          <p class="local-note">Witness values stay in this browser tab. The first run loads the prover and can take a few seconds.</p>
+        </form>
+
+        <section class="proof-console" aria-live="polite">
+          <div class="console-heading">
+            <div>
+              <p>Testnet run</p>
+              <h2 id="run-title">Ready to prove</h2>
+            </div>
+            <span id="run-status" class="status-ready">Ready</span>
+          </div>
+
+          <ol class="proof-stages" id="proof-stages">
+            <li data-stage="load"><span>01</span><div><strong>Load prover</strong><small>Noir + Barretenberg</small></div></li>
+            <li data-stage="witness"><span>02</span><div><strong>Build witness</strong><small>Constrain private inputs</small></div></li>
+            <li data-stage="prove"><span>03</span><div><strong>Generate proof</strong><small>UltraHonk, EVM target</small></div></li>
+            <li data-stage="verify"><span>04</span><div><strong>Verify</strong><small>Local cryptographic check</small></div></li>
+          </ol>
+
+          <dl class="result-grid">
+            <div><dt>Proof size</dt><dd id="proof-size">--</dd></div>
+            <div><dt>Total time</dt><dd id="proof-time">--</dd></div>
+            <div><dt>Public inputs</dt><dd id="public-count">--</dd></div>
+            <div><dt>Verifier target</dt><dd>EVM</dd></div>
+          </dl>
+
+          <div class="commitment-output">
+            <span>Action commitment</span>
+            <code id="action-commitment">No proof generated</code>
+          </div>
+          <p id="run-message" class="run-message">Choose a scenario and start a testnet run.</p>
+        </section>
+      </section>
+
+      <section class="testnet-boundary">
+        <div><p class="eyebrow">What this proves</p><h2>A valid proof means all three private measurements satisfy the public policy limits.</h2></div>
+        <p>This is an unaudited testnet circuit and local verifier preview. It generates real proofs, but it is not a production deployment or a hosted proving service.</p>
+      </section>
+    </main>
+
+    <script type="module" src="./testnet-app.js"></script>
+  </body>
+</html>
